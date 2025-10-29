@@ -1,0 +1,15 @@
+{
+  "buildCommand": "npm run build:frontend && rm -rf public && mkdir -p public && cp -r frontend/dist/* public && cd backend && npx prisma generate",
+  "functions": {
+    "api/index.js": {
+      "runtime": "nodejs20.x",
+      "maxDuration": 10,
+      "memory": 512
+    }
+  },
+  "routes": [
+    { "src": "/api/(.*)", "dest": "/api/index.js" },
+    { "handle": "filesystem" },
+    { "src": "/.*", "dest": "/index.html" }
+  ]
+}

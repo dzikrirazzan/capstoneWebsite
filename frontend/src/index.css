@@ -1,0 +1,101 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  --bg-root: #f5f5f5;
+  --bg-card: #ffffff;
+  --bg-muted: #f1f2f6;
+  --border-color: #e4e7eb;
+  --text-primary: #1f2937;
+  --text-secondary: #334155;
+  --text-muted: #74808f;
+  --text-inverse: #09090b;
+  --chip-normal-bg: #eceff3;
+  --chip-normal-text: #1f2937;
+  --chip-alert-bg: rgba(239, 68, 68, 0.1);
+  --chip-alert-text: #c2410c;
+  --accent: #f97316;
+  --accent-soft: rgba(249, 115, 22, 0.12);
+  --accent-strong: #ea580c;
+}
+
+.theme-dark {
+  color-scheme: dark;
+  --bg-root: #0b0d0f;
+  --bg-card: #12151a;
+  --bg-muted: #181b20;
+  --border-color: #1f242c;
+  --text-primary: #f3f4f6;
+  --text-secondary: #d1d5db;
+  --text-muted: #8b98aa;
+  --text-inverse: #050505;
+  --chip-normal-bg: #1f242c;
+  --chip-normal-text: #f3f4f6;
+  --chip-alert-bg: rgba(239, 68, 68, 0.22);
+  --chip-alert-text: #fca5a5;
+  --accent: #fb923c;
+  --accent-soft: rgba(251, 146, 60, 0.16);
+  --accent-strong: #f97316;
+}
+
+.theme-light {
+  color-scheme: light;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background-color: var(--bg-root);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+.app-shell {
+  background-color: var(--bg-root);
+  color: var(--text-primary);
+}
+
+.card-container {
+  border-radius: 0.75rem;
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-card);
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+}
+
+.muted-card {
+  background-color: var(--bg-muted);
+}
+
+.chip {
+  border-radius: 9999px;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.chip-normal {
+  background-color: var(--chip-normal-bg);
+  color: var(--chip-normal-text);
+}
+
+.chip-alert {
+  background-color: var(--chip-alert-bg);
+  color: var(--chip-alert-text);
+}
