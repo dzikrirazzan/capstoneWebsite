@@ -208,40 +208,6 @@ function App() {
     };
   }, []);
 
-  const persistSensorReading = useCallback(
-    async (reading) => {
-      const { id: _omitId, alertStatus: _omitAlert, ...payload } = reading ?? {};
-
-      const response = await fetch(`${apiBaseUrl}/api/sensor-data`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to send sensor data (${response.status})`);
-      }
-
-      return response.json();
-    },
-    [apiBaseUrl]
-  );
-
-  const applyDummyReading = useCallback(
-    (reading) => {
-      setIsUsingDummyData(true);
-      setHasBackendError(true);
-
-      dummyHistoryRef.current = [reading, ...dummyHistoryRef.current].sort(
-        (a, b) => new Date(b.timestamp) - new Date(a.timestamp)
-      );
-
-      updateDisplaysFromDummy(1, appliedHistoryFiltersRef.current.limit || 20);
-      setSensorData(reading);
-    },
-    [updateDisplaysFromDummy]
-  );
-
   const seedDummyData = useCallback(() => {
     if (dummyHistoryRef.current.length) {
       updateDisplaysFromDummy(1, appliedHistoryFiltersRef.current.limit || 20);
@@ -683,33 +649,6 @@ function App() {
     setTheme((current) => (current === "dark" ? "light" : "dark"));
   }, []);
 
-  const handleSendTestData = useCallback(async () => {
-    const reading = createRandomReading();
-    try {
-      const saved = await persistSensorReading(reading);
-      latestRecordIdRef.current = saved.id ?? saved.timestamp;
-      setSensorData(saved);
-      setHasBackendError(false);
-      setIsUsingDummyData(false);
-
-      await Promise.all([
-        fetchStats(statsRangeRef.current, appliedHistoryFiltersRef.current).catch(() => null),
-        fetchHistory(historyPageRef.current, appliedHistoryFiltersRef.current).catch(() => null),
-        fetchChartData(appliedHistoryFiltersRef.current).catch(() => null),
-      ]);
-    } catch (error) {
-      console.error("Failed to send test data", error);
-      applyDummyReading(reading);
-    }
-  }, [
-    applyDummyReading,
-    createRandomReading,
-    fetchChartData,
-    fetchHistory,
-    fetchStats,
-    persistSensorReading,
-  ]);
-
   const isDummyMode = isUsingDummyData || hasBackendError;
 
   return (
@@ -722,7 +661,6 @@ function App() {
               sensorData={sensorData}
               theme={theme}
               onToggleTheme={toggleTheme}
-              onSendTestData={handleSendTestData}
               stats={stats}
               statsError={statsError}
               statsRange={statsRange}
@@ -741,7 +679,6 @@ function App() {
             <HistoryPage
               theme={theme}
               onToggleTheme={toggleTheme}
-              onSendTestData={handleSendTestData}
               history={dummyHistoryRef.current.length && isDummyMode ? dummyHistoryRef.current : history}
               historyLoading={historyLoading}
               historyError={historyError}

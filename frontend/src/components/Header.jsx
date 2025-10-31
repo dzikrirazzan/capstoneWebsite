@@ -7,7 +7,7 @@ const navigation = [
   { label: "Riwayat Sensor", href: "/history" },
 ];
 
-export default function Header({ theme, onToggleTheme, onSendTestData }) {
+export default function Header({ theme, onToggleTheme }) {
 
   return (
     <header className="sticky top-0 z-50 border-b border-[var(--border-color)] bg-[var(--bg-root)]/85 backdrop-blur">
@@ -55,20 +55,11 @@ export default function Header({ theme, onToggleTheme, onSendTestData }) {
           ))}
         </nav>
 
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
-          {onSendTestData && (
-            <button
-              onClick={onSendTestData}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[var(--accent-strong)] sm:w-auto"
-            >
-              Kirim Data Uji
-            </button>
-          )}
-
+        <div className="flex items-center justify-end">
           <button
             onClick={onToggleTheme}
             aria-label="Toggle theme"
-            className="hidden h-10 w-10 items-center justify-center rounded-xl border border-[var(--border-color)] bg-[var(--bg-card)] transition hover:border-[var(--accent)] md:flex"
+            className="h-10 w-10 flex items-center justify-center rounded-xl border border-[var(--border-color)] bg-[var(--bg-card)] transition hover:border-[var(--accent)]"
           >
             {theme === "dark" ? (
               <Sun className="h-4 w-4 text-[var(--text-secondary)]" />

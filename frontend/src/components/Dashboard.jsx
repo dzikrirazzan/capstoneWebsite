@@ -7,7 +7,6 @@ export default function Dashboard({
   sensorData,
   theme,
   onToggleTheme,
-  onSendTestData,
   stats,
   statsError,
   statsRange,
@@ -20,7 +19,7 @@ export default function Dashboard({
 }) {
   return (
     <div className="min-h-screen">
-      <Header theme={theme} onToggleTheme={onToggleTheme} onSendTestData={onSendTestData} />
+      <Header theme={theme} onToggleTheme={onToggleTheme} />
 
       <main className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 py-8 lg:gap-10">
         <section className="space-y-6">
