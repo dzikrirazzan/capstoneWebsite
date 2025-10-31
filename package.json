@@ -14,7 +14,8 @@
     "dev:frontend": "cd frontend && npm run dev",
     "build": "npm run build:backend && npm run build:frontend",
     "build:backend": "cd backend && npm run build",
-    "build:frontend": "cd frontend && npm run build"
+    "build:frontend": "cd frontend && npm run build",
+    "build:app-platform": "npm run build:frontend && rm -rf backend/public && mkdir -p backend/public && cp -r frontend/dist/* backend/public"
   },
   "keywords": [
     "fuelsense",

@@ -12,6 +12,7 @@ yarn-error.log*
 # Production builds
 dist/
 build/
+backend/public/
 
 # Database
 *.db
