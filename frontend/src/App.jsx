@@ -44,8 +44,6 @@ const toIsoString = (value) => {
 function App() {
   const [apiBaseUrl] = useState(resolveApiBaseUrl);
   const [sensorData, setSensorData] = useState(null);
-  const [isBackendReachable, setIsBackendReachable] = useState(true);
-  const [alert, setAlert] = useState(null);
   const [stats, setStats] = useState(null);
   const [statsError, setStatsError] = useState(null);
   const [statsRange, setStatsRange] = useState("1h");
@@ -76,7 +74,6 @@ function App() {
   const statsRangeRef = useRef(statsRange);
   const historyPageRef = useRef(1);
   const appliedHistoryFiltersRef = useRef(defaultHistoryFilters);
-  const alertTimeoutRef = useRef(null);
   const [hasBackendError, setHasBackendError] = useState(false);
   const dummyHistoryRef = useRef([]);
   const dummyIdRef = useRef(1);
@@ -187,9 +184,6 @@ function App() {
 
       const latest = dummyHistoryRef.current[0] ?? null;
       setSensorData(latest);
-      if (!latest) {
-        setAlert(null);
-      }
     },
     [computeStatsFromDataset]
   );
@@ -201,7 +195,6 @@ function App() {
     const temperature = Number((70 + Math.random() * 40).toFixed(1));
     const fuelConsumption = Number((5 + Math.random() * 10).toFixed(2));
     const customSensor = Number((Math.random() * 100).toFixed(1));
-    const alertStatus = rpm >= 5000;
 
     return {
       id: dummyIdRef.current++,
@@ -212,14 +205,12 @@ function App() {
       temperature,
       fuelConsumption,
       customSensor,
-      alertStatus,
     };
   }, []);
 
   const persistSensorReading = useCallback(
     async (reading) => {
-      const payload = { ...reading };
-      delete payload.id;
+      const { id: _omitId, alertStatus: _omitAlert, ...payload } = reading ?? {};
 
       const response = await fetch(`${apiBaseUrl}/api/sensor-data`, {
         method: "POST",
@@ -240,7 +231,6 @@ function App() {
     (reading) => {
       setIsUsingDummyData(true);
       setHasBackendError(true);
-      setIsBackendReachable(false);
 
       dummyHistoryRef.current = [reading, ...dummyHistoryRef.current].sort(
         (a, b) => new Date(b.timestamp) - new Date(a.timestamp)
@@ -248,16 +238,6 @@ function App() {
 
       updateDisplaysFromDummy(1, appliedHistoryFiltersRef.current.limit || 20);
       setSensorData(reading);
-
-      if (reading.alertStatus) {
-        setAlert({ message: "High RPM detected!", rpm: reading.rpm });
-        if (alertTimeoutRef.current) {
-          window.clearTimeout(alertTimeoutRef.current);
-        }
-        alertTimeoutRef.current = window.setTimeout(() => setAlert(null), 5000);
-      } else {
-        setAlert(null);
-      }
     },
     [updateDisplaysFromDummy]
   );
@@ -276,7 +256,6 @@ function App() {
     dummyHistoryRef.current = seeds.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
     setIsUsingDummyData(true);
     setHasBackendError(true);
-    setIsBackendReachable(false);
     updateDisplaysFromDummy(1, appliedHistoryFiltersRef.current.limit || 20);
   }, [createRandomReading, updateDisplaysFromDummy]);
 
@@ -292,14 +271,6 @@ function App() {
     root.classList.add(nextClass);
     window.localStorage.setItem("fuelsense:theme", theme);
   }, [theme]);
-
-  useEffect(() => {
-    return () => {
-      if (alertTimeoutRef.current) {
-        window.clearTimeout(alertTimeoutRef.current);
-      }
-    };
-  }, []);
 
   const fetchStats = useCallback(async (range, filters) => {
     setStatsLoading(true);
@@ -432,8 +403,6 @@ function App() {
         const response = await fetch(`${apiBaseUrl}/api/sensor-data/latest`);
         if (response.status === 404) {
           setSensorData(null);
-          setAlert(null);
-          setIsBackendReachable(true);
           setHasBackendError(false);
           setIsUsingDummyData(false);
           return;
@@ -444,7 +413,6 @@ function App() {
         }
 
         const payload = await response.json();
-        setIsBackendReachable(true);
         setHasBackendError(false);
         setIsUsingDummyData(false);
 
@@ -460,16 +428,6 @@ function App() {
         latestRecordIdRef.current = latestId;
         setSensorData(payload);
 
-        if (payload.alertStatus) {
-          setAlert({ message: "High RPM detected!", rpm: payload.rpm });
-          if (alertTimeoutRef.current) {
-            window.clearTimeout(alertTimeoutRef.current);
-          }
-          alertTimeoutRef.current = window.setTimeout(() => setAlert(null), 5000);
-        } else {
-          setAlert(null);
-        }
-
         await Promise.all([
           fetchStats(statsRangeRef.current, appliedHistoryFiltersRef.current).catch(() => null),
           fetchHistory(historyPageRef.current, appliedHistoryFiltersRef.current).catch(() => null),
@@ -477,7 +435,6 @@ function App() {
         ]);
       } catch (error) {
         console.error("Polling latest data failed", error);
-        setIsBackendReachable(false);
         setHasBackendError(true);
         setIsUsingDummyData(true);
         seedDummyData();
@@ -578,17 +535,7 @@ function App() {
           throw new Error("No data");
         }
 
-        const headers = [
-          "id",
-          "timestamp",
-          "rpm",
-          "torque",
-          "maf",
-          "temperature",
-          "fuelConsumption",
-          "customSensor",
-          "alertStatus",
-        ];
+        const headers = ["id", "timestamp", "rpm", "torque", "maf", "temperature", "fuelConsumption", "customSensor"];
 
         const escapeValue = (value) => {
           if (value === null || value === undefined) return "";
@@ -609,7 +556,6 @@ function App() {
               escapeValue(row.temperature),
               escapeValue(row.fuelConsumption),
               escapeValue(row.customSensor),
-              escapeValue(row.alertStatus),
             ].join(",")
           );
 
@@ -695,7 +641,6 @@ function App() {
       }
       updateDisplaysFromDummy(1, appliedHistoryFiltersRef.current.limit || 20);
       setSensorData(null);
-      setAlert(null);
       setIsResettingHistory(false);
       return;
     }
@@ -744,19 +689,8 @@ function App() {
       const saved = await persistSensorReading(reading);
       latestRecordIdRef.current = saved.id ?? saved.timestamp;
       setSensorData(saved);
-      setIsBackendReachable(true);
       setHasBackendError(false);
       setIsUsingDummyData(false);
-
-      if (saved.alertStatus) {
-        setAlert({ message: "High RPM detected!", rpm: saved.rpm });
-        if (alertTimeoutRef.current) {
-          window.clearTimeout(alertTimeoutRef.current);
-        }
-        alertTimeoutRef.current = window.setTimeout(() => setAlert(null), 5000);
-      } else {
-        setAlert(null);
-      }
 
       await Promise.all([
         fetchStats(statsRangeRef.current, appliedHistoryFiltersRef.current).catch(() => null),
@@ -786,8 +720,6 @@ function App() {
           element={
             <Dashboard
               sensorData={sensorData}
-              isConnected={isBackendReachable}
-              alert={alert}
               theme={theme}
               onToggleTheme={toggleTheme}
               onSendTestData={handleSendTestData}
@@ -823,7 +755,6 @@ function App() {
               onResetHistory={handleResetHistoryData}
               isExportingHistory={isExportingHistory}
               isResettingHistory={isResettingHistory}
-              isDummyMode={isDummyMode}
             />
           }
         />

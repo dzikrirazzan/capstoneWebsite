@@ -1,13 +1,10 @@
 import Header from "./Header";
-import AlertBanner from "./AlertBanner";
 import SensorChart from "./SensorChart";
 import StatsPanel from "./StatsPanel";
 import SummaryCards from "./SummaryCards";
 
 export default function Dashboard({
   sensorData,
-  isConnected,
-  alert,
   theme,
   onToggleTheme,
   onSendTestData,
@@ -23,9 +20,7 @@ export default function Dashboard({
 }) {
   return (
     <div className="min-h-screen">
-      <Header isConnected={isConnected} theme={theme} onToggleTheme={onToggleTheme} onSendTestData={onSendTestData} />
-
-      {alert && <AlertBanner message={alert.message} rpm={alert.rpm} />}
+      <Header theme={theme} onToggleTheme={onToggleTheme} onSendTestData={onSendTestData} />
 
       <main className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 py-8 lg:gap-10">
         <section className="space-y-6">

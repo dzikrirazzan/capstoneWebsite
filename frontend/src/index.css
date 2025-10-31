@@ -22,8 +22,6 @@
   --text-inverse: #09090b;
   --chip-normal-bg: #eceff3;
   --chip-normal-text: #1f2937;
-  --chip-alert-bg: rgba(239, 68, 68, 0.1);
-  --chip-alert-text: #c2410c;
   --accent: #f97316;
   --accent-soft: rgba(249, 115, 22, 0.12);
   --accent-strong: #ea580c;
@@ -41,8 +39,6 @@
   --text-inverse: #050505;
   --chip-normal-bg: #1f242c;
   --chip-normal-text: #f3f4f6;
-  --chip-alert-bg: rgba(239, 68, 68, 0.22);
-  --chip-alert-text: #fca5a5;
   --accent: #fb923c;
   --accent-soft: rgba(251, 146, 60, 0.16);
   --accent-strong: #f97316;
@@ -93,9 +89,4 @@ body {
 .chip-normal {
   background-color: var(--chip-normal-bg);
   color: var(--chip-normal-text);
-}
-
-.chip-alert {
-  background-color: var(--chip-alert-bg);
-  color: var(--chip-alert-text);
 }

@@ -1,4 +1,4 @@
-import { Activity, Wifi, WifiOff, Sun, Moon } from "lucide-react";
+import { Activity, Sun, Moon } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { cn } from "../lib/utils.js";
 
@@ -7,7 +7,7 @@ const navigation = [
   { label: "Riwayat Sensor", href: "/history" },
 ];
 
-export default function Header({ isConnected, theme, onToggleTheme, onSendTestData }) {
+export default function Header({ theme, onToggleTheme, onSendTestData }) {
 
   return (
     <header className="sticky top-0 z-50 border-b border-[var(--border-color)] bg-[var(--bg-root)]/85 backdrop-blur">
@@ -64,17 +64,6 @@ export default function Header({ isConnected, theme, onToggleTheme, onSendTestDa
               Kirim Data Uji
             </button>
           )}
-
-          <div
-            className={cn(
-              "chip w-full justify-center sm:w-auto",
-              isConnected ? "chip-normal" : "chip-alert",
-              "items-center gap-2 text-xs font-semibold"
-            )}
-          >
-            {isConnected ? <Wifi className="h-3.5 w-3.5" /> : <WifiOff className="h-3.5 w-3.5" />}
-            {isConnected ? "Terhubung" : "Terputus"}
-          </div>
 
           <button
             onClick={onToggleTheme}

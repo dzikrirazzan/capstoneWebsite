@@ -20,11 +20,10 @@ export default function HistoryPage({
   onResetHistory,
   isExportingHistory,
   isResettingHistory,
-  isDummyMode = false,
 }) {
   return (
     <div className="min-h-screen">
-      <Header isConnected={!isDummyMode} theme={theme} onToggleTheme={onToggleTheme} onSendTestData={onSendTestData} />
+      <Header theme={theme} onToggleTheme={onToggleTheme} onSendTestData={onSendTestData} />
 
       <main className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-8">
         <HistoryFilters

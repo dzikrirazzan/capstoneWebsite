@@ -37,16 +37,9 @@ export default function HistoryTable({ data, pagination, isLoading, error, onPag
               key={item.id}
               className="rounded-lg border border-[var(--border-color)] bg-[var(--bg-card)] px-4 py-4 transition hover:border-[var(--accent)]/60"
             >
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <p className="text-xs uppercase tracking-wide text-[var(--text-muted)]">Timestamp</p>
-                  <p className="text-sm font-medium text-[var(--text-secondary)]">{formatDate(item.timestamp)}</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className={item.alertStatus ? "chip chip-alert" : "chip chip-normal"}>
-                    {item.alertStatus ? "Alert" : "Normal"}
-                  </span>
-                </div>
+              <div>
+                <p className="text-xs uppercase tracking-wide text-[var(--text-muted)]">Timestamp</p>
+                <p className="text-sm font-medium text-[var(--text-secondary)]">{formatDate(item.timestamp)}</p>
               </div>
 
               <dl className="mt-4 grid grid-cols-2 gap-3 text-sm text-[var(--text-muted)] md:grid-cols-4">

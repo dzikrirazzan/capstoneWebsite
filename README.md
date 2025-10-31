@@ -33,7 +33,6 @@ Vehicle ECU → Microcontroller → USB/Serial → Desktop App → HTTP POST →
 - ✅ **Near Real-time Monitoring**: Desktop app mengirim data periodik via HTTP
 - ✅ **Live Metrics**: Real-time RPM, Torque, MAF, Temperature, Fuel Consumption, and Custom sensor values
 - ✅ **Interactive History Chart**: Visualize sensor trends over selected ranges
-- ✅ **Alert System**: Automatic alerts when RPM ≥ 5000
 - ✅ **Responsive Design**: Works on desktop, tablet, and mobile
 - ✅ **Historical Data**: MySQL database storage
 - ✅ **Data Management Tools**: Filter by date, export CSV, and purge outdated records
@@ -81,8 +80,7 @@ capstoneWebsite/
 │   │   ├── App.jsx                # Main app component
 │   │   ├── components/
 │   │   │   ├── Dashboard.jsx      # Main dashboard
-│   │   │   ├── Header.jsx         # Header with navigation & status
-│   │   │   ├── AlertBanner.jsx    # Alert notification
+│   │   │   ├── Header.jsx         # Header with navigation & theme toggle
 │   │   │   ├── StatsPanel.jsx     # Statistics panel
 │   │   │   ├── SensorChart.jsx    # Trend visualization
 │   │   │   └── HistoryTable.jsx   # History list
@@ -326,7 +324,6 @@ Contoh payload desktop app:
   "temperature": 95.2,
   "fuelConsumption": 8.5,
   "customSensor": 50.0,
-  "alertStatus": false,
   "timestamp": "2024-06-01T12:00:00Z"
 }
 ```
@@ -342,8 +339,7 @@ await service.SendReadingAsync(new SensorData {
     Torque = 210,
     Maf = 75.2,
     Temperature = 92.4,
-    FuelConsumption = 7.8,
-    AlertStatus = false
+    FuelConsumption = 7.8
 });
 ```
 
@@ -386,7 +382,6 @@ curl -X POST http://localhost:3001/api/sensor-data \
 - **Real-time Feed**: Live metrics update instantly on the dashboard
 - **Interactive Chart**: Tampilan tren multi-metrik secara langsung
 - **Advanced Filters**: Date range, pagination, dan manajemen data dalam satu panel
-- **Alert System**: Visual dan animasi peringatan saat RPM tinggi
 - **Clean Dark Theme**: Konsisten dengan aksen lembut untuk kenyamanan malam hari
 
 ## 🔧 Troubleshooting

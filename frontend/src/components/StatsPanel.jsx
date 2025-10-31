@@ -120,12 +120,6 @@ export default function StatsPanel({ sensorData, stats, statsError, statsRange, 
         })}
       </div>
 
-      {sensorData?.alertStatus && (
-        <div className="rounded-lg border border-transparent bg-[rgba(239,68,68,0.18)] p-4">
-          <p className="font-medium text-[#fca5a5]">⚠️ Alert Status: Active</p>
-        </div>
-      )}
-
       <div className="space-y-4">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-2">

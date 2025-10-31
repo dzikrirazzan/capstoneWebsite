@@ -6,10 +6,12 @@
   "main": "src/server.js",
   "scripts": {
     "dev": "npm run prisma:generate && node --watch src/server.js",
-    "build": "echo \"No build step needed for JavaScript backend\"",
+    "build": "npm run prisma:push && npm run prisma:generate",
     "start": "node src/server.js",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
+    "prisma:deploy": "prisma migrate deploy",
+    "prisma:push": "prisma db push --accept-data-loss",
     "prisma:studio": "prisma studio"
   },
   "keywords": [],
