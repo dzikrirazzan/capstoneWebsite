@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Routes, Route } from "react-router-dom";
+import ExcelJS from "exceljs";
 import Dashboard from "./components/Dashboard";
 import HistoryPage from "./components/history/HistoryPage";
 
@@ -501,36 +502,181 @@ function App() {
           throw new Error("No data");
         }
 
-        const headers = ["id", "timestamp", "rpm", "torque", "maf", "temperature", "fuelConsumption", "customSensor"];
-
-        const escapeValue = (value) => {
-          if (value === null || value === undefined) return "";
-          const stringValue = value instanceof Date ? value.toISOString() : String(value);
-          return `"${stringValue.replace(/"/g, '""')}"`;
+        const formatTimestamp = (date) => {
+          if (!date) return "";
+          const d = new Date(date);
+          const year = d.getFullYear();
+          const month = String(d.getMonth() + 1).padStart(2, "0");
+          const day = String(d.getDate()).padStart(2, "0");
+          const hours = String(d.getHours()).padStart(2, "0");
+          const minutes = String(d.getMinutes()).padStart(2, "0");
+          const seconds = String(d.getSeconds()).padStart(2, "0");
+          return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
         };
 
-        const rows = dummyHistoryRef.current
-          .slice()
-          .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
-          .map((row) =>
-            [
-              escapeValue(row.id),
-              escapeValue(row.timestamp),
-              escapeValue(row.rpm),
-              escapeValue(row.torque),
-              escapeValue(row.maf),
-              escapeValue(row.temperature),
-              escapeValue(row.fuelConsumption),
-              escapeValue(row.customSensor),
-            ].join(",")
-          );
+        // Sort data by timestamp
+        const sortedData = dummyHistoryRef.current.slice().sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
 
-        const csv = [headers.join(","), ...rows].join("\n");
-        const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+        // Calculate statistics
+        const stats = {
+          torque: sortedData.map(d => d.torque),
+          fuelConsumption: sortedData.map(d => d.fuelConsumption),
+          rpm: sortedData.map(d => d.rpm),
+          temperature: sortedData.map(d => d.temperature),
+          maf: sortedData.map(d => d.maf),
+        };
+
+        const calculateStats = (values) => ({
+          current: values[values.length - 1],
+          average: values.reduce((sum, v) => sum + v, 0) / values.length,
+          min: Math.min(...values),
+          max: Math.max(...values),
+        });
+
+        const torqueStats = calculateStats(stats.torque);
+        const fuelStats = calculateStats(stats.fuelConsumption);
+        const rpmStats = calculateStats(stats.rpm);
+        const tempStats = calculateStats(stats.temperature);
+        const mafStats = calculateStats(stats.maf);
+
+        // Calculate duration
+        const firstTimestamp = new Date(sortedData[0].timestamp);
+        const lastTimestamp = new Date(sortedData[sortedData.length - 1].timestamp);
+        const durationMinutes = ((lastTimestamp - firstTimestamp) / 1000 / 60).toFixed(1);
+
+        const now = new Date();
+        const exportDate = formatTimestamp(now);
+
+        // Create Excel workbook with ExcelJS
+        const workbook = new ExcelJS.Workbook();
+        workbook.creator = "FuelSense Monitor";
+        workbook.created = now;
+
+        // Sheet 1: Sensor Data
+        const dataSheet = workbook.addWorksheet("Sensor Data");
+        dataSheet.columns = [
+          { header: "Timestamp", key: "timestamp", width: 20 },
+          { header: "Torsi (Nm)", key: "torque", width: 15 },
+          { header: "BBM (gram)", key: "fuelConsumption", width: 15 },
+          { header: "RPM", key: "rpm", width: 10 },
+          { header: "Temperature (°C)", key: "temperature", width: 18 },
+          { header: "MAF (rpm)", key: "maf", width: 15 },
+        ];
+
+        // Style header row
+        dataSheet.getRow(1).font = { bold: true, color: { argb: "FFFFFFFF" } };
+        dataSheet.getRow(1).fill = {
+          type: "pattern",
+          pattern: "solid",
+          fgColor: { argb: "FF4472C4" },
+        };
+        dataSheet.getRow(1).alignment = { horizontal: "center", vertical: "middle" };
+
+        // Add data rows
+        sortedData.forEach((row) => {
+          dataSheet.addRow({
+            timestamp: formatTimestamp(row.timestamp),
+            torque: row.torque,
+            fuelConsumption: row.fuelConsumption,
+            rpm: row.rpm,
+            temperature: row.temperature,
+            maf: row.maf,
+          });
+        });
+
+        // Sheet 2: Summary
+        const summarySheet = workbook.addWorksheet("Summary");
+        summarySheet.columns = [
+          { width: 25 },
+          { width: 20 },
+        ];
+
+        // Add summary header
+        summarySheet.mergeCells("A1:B1");
+        const titleCell = summarySheet.getCell("A1");
+        titleCell.value = "FUELSENSE MONITOR - DATA SUMMARY";
+        titleCell.font = { bold: true, size: 14 };
+        titleCell.alignment = { horizontal: "center" };
+
+        summarySheet.addRow([]);
+        summarySheet.addRow(["Export Date", exportDate]);
+        summarySheet.addRow(["Total Records", sortedData.length]);
+        summarySheet.addRow(["Duration", `${durationMinutes} minutes`]);
+        summarySheet.addRow([]);
+
+        // Add statistics header
+        summarySheet.mergeCells("A7:F7");
+        const statsHeaderCell = summarySheet.getCell("A7");
+        statsHeaderCell.value = "STATISTICS";
+        statsHeaderCell.font = { bold: true, size: 12 };
+
+        // Add statistics table
+        const statsHeaderRow = summarySheet.addRow([
+          "Parameter",
+          "Current",
+          "Average",
+          "Minimum",
+          "Maximum",
+          "Unit",
+        ]);
+        statsHeaderRow.font = { bold: true };
+        statsHeaderRow.fill = {
+          type: "pattern",
+          pattern: "solid",
+          fgColor: { argb: "FFD9E1F2" },
+        };
+
+        summarySheet.addRow(["Torsi", torqueStats.current.toFixed(2), torqueStats.average.toFixed(2), torqueStats.min.toFixed(2), torqueStats.max.toFixed(2), "Nm"]);
+        summarySheet.addRow(["BBM", fuelStats.current.toFixed(2), fuelStats.average.toFixed(2), fuelStats.min.toFixed(2), fuelStats.max.toFixed(2), "gram"]);
+        summarySheet.addRow(["RPM", rpmStats.current.toFixed(0), rpmStats.average.toFixed(0), rpmStats.min.toFixed(0), rpmStats.max.toFixed(0), "RPM"]);
+        summarySheet.addRow(["Temperature", tempStats.current.toFixed(1), tempStats.average.toFixed(1), tempStats.min.toFixed(1), tempStats.max.toFixed(1), "°C"]);
+        summarySheet.addRow(["MAF", mafStats.current.toFixed(1), mafStats.average.toFixed(1), mafStats.min.toFixed(1), mafStats.max.toFixed(1), "rpm"]);
+
+        // Sheet 3: Charts & Visualization
+        const chartSheet = workbook.addWorksheet("Charts & Visualization");
+        chartSheet.columns = [
+          { header: "Time Index", key: "index", width: 12 },
+          { header: "Torsi (Nm)", key: "torque", width: 15 },
+          { header: "BBM (gram)", key: "fuelConsumption", width: 15 },
+          { header: "RPM", key: "rpm", width: 10 },
+          { header: "Temperature (°C)", key: "temperature", width: 18 },
+          { header: "MAF (rpm)", key: "maf", width: 15 },
+        ];
+
+        // Style header row
+        chartSheet.getRow(1).font = { bold: true, color: { argb: "FFFFFFFF" } };
+        chartSheet.getRow(1).fill = {
+          type: "pattern",
+          pattern: "solid",
+          fgColor: { argb: "FF70AD47" },
+        };
+        chartSheet.getRow(1).alignment = { horizontal: "center", vertical: "middle" };
+
+        // Add data rows with index
+        sortedData.forEach((row, index) => {
+          chartSheet.addRow({
+            index: index + 1,
+            torque: row.torque,
+            fuelConsumption: row.fuelConsumption,
+            rpm: row.rpm,
+            temperature: row.temperature,
+            maf: row.maf,
+          });
+        });
+
+        // Generate Excel file
+        const buffer = await workbook.xlsx.writeBuffer();
+        const blob = new Blob([buffer], {
+          type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        });
         const downloadUrl = window.URL.createObjectURL(blob);
         const anchor = document.createElement("a");
         anchor.href = downloadUrl;
-        anchor.download = "sensor-data.csv";
+
+        // Generate filename with timestamp
+        const fileTimestamp = formatTimestamp(now).replace(/[: ]/g, "").replace(/-/g, "");
+        anchor.download = `FuelsenseData_${fileTimestamp}.xlsx`;
+
         document.body.appendChild(anchor);
         anchor.click();
         anchor.remove();
@@ -563,7 +709,18 @@ function App() {
       const downloadUrl = window.URL.createObjectURL(blob);
       const anchor = document.createElement("a");
       anchor.href = downloadUrl;
-      anchor.download = "sensor-data.csv";
+
+      // Generate filename with timestamp
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, "0");
+      const day = String(now.getDate()).padStart(2, "0");
+      const hours = String(now.getHours()).padStart(2, "0");
+      const minutes = String(now.getMinutes()).padStart(2, "0");
+      const seconds = String(now.getSeconds()).padStart(2, "0");
+      const fileTimestamp = `${year}${month}${day}${hours}${minutes}${seconds}`;
+      anchor.download = `FuelsenseData_${fileTimestamp}.xlsx`;
+
       document.body.appendChild(anchor);
       anchor.click();
       anchor.remove();
