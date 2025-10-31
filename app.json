@@ -1,0 +1,19 @@
+{
+  "name": "fuelsense-monitor-web",
+  "description": "FuelSense Monitor Web Application - Real-time Vehicle Engine Monitoring",
+  "scripts": {
+    "prebuild": "echo 'Starting build process...'",
+    "postdeploy": "echo 'Deployment complete!'"
+  },
+  "buildpacks": [],
+  "env": {
+    "NODE_ENV": {
+      "description": "Node environment",
+      "value": "production"
+    },
+    "PORT": {
+      "description": "HTTP port",
+      "value": "8080"
+    }
+  }
+}
