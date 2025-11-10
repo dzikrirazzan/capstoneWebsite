@@ -1,7 +1,10 @@
 <<<<<<< HEAD
+
 # capstoneWebsite
+
 =======
-# 🚗⚡ FuelSense Monitor - Web Application
+
+# 🚗⚡ EMSys - Engine Monitoring System
 
 Modern real-time vehicle engine monitoring web application built with Express.js, React, and MySQL.
 
@@ -20,7 +23,7 @@ Modern real-time vehicle engine monitoring web application built with Express.js
 
 ## 🌟 Overview
 
-FuelSense Monitor Web App is a near real-time monitoring system for vehicle engine parameters. Desktop application (terhubung ke ECU via USB/Serial) mengirim data secara periodik melalui HTTP `POST /api/sensor-data`, kemudian dashboard React mem-polling update terbaru dan menampilkan histori yang tersimpan di MySQL.
+EMSys (Engine Monitoring System) is a near real-time monitoring system for vehicle engine parameters. Desktop application (terhubung ke ECU via USB/Serial) mengirim data secara periodik melalui HTTP `POST /api/sensor-data`, kemudian dashboard React mem-polling update terbaru dan menampilkan histori yang tersimpan di MySQL.
 
 **Data Flow:**
 
@@ -308,11 +311,11 @@ Content-Type: application/json
 
 ### Desktop HTTP Endpoints
 
-| Method | Endpoint | Deskripsi |
-| ------ | -------- | --------- |
-| `POST` | `/api/sensor-data` | Menyimpan satu record sensor dari desktop app. |
-| `GET`  | `/api/sensor-data/latest` | Di-polling frontend untuk mendeteksi data terbaru. |
-| `GET`  | `/api/health` | Health check sederhana (dapat dipakai desktop app). |
+| Method | Endpoint                  | Deskripsi                                           |
+| ------ | ------------------------- | --------------------------------------------------- |
+| `POST` | `/api/sensor-data`        | Menyimpan satu record sensor dari desktop app.      |
+| `GET`  | `/api/sensor-data/latest` | Di-polling frontend untuk mendeteksi data terbaru.  |
+| `GET`  | `/api/health`             | Health check sederhana (dapat dipakai desktop app). |
 
 Contoh payload desktop app:
 
@@ -414,4 +417,5 @@ MIT License
 ---
 
 **Built with ❤️ for Real-time Vehicle Monitoring**
->>>>>>> 8f6a11b (proyek capstone)
+
+> > > > > > > 8f6a11b (proyek capstone)

@@ -1,7 +1,7 @@
 {
   "name": "backend",
   "version": "1.0.0",
-  "description": "FuelSense Monitor Backend API",
+  "description": "EMSys (Engine Monitoring System) Backend API",
   "type": "module",
   "main": "src/server.js",
   "scripts": {

@@ -1,6 +1,6 @@
 {
-  "name": "fuelsense-monitor-web",
-  "description": "FuelSense Monitor Web Application - Real-time Vehicle Engine Monitoring",
+  "name": "emsys-monitor-web",
+  "description": "EMSys - Engine Monitoring System Web Application - Real-time Vehicle Engine Monitoring",
   "scripts": {
     "prebuild": "echo 'Starting build process...'",
     "postdeploy": "echo 'Deployment complete!'"

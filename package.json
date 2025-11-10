@@ -1,7 +1,7 @@
 {
-  "name": "fuelsense-monitor-web",
+  "name": "emsys-monitor-web",
   "version": "1.0.0",
-  "description": "FuelSense Monitor Web Application - Real-time Vehicle Engine Monitoring",
+  "description": "EMSys (Engine Monitoring System) - Real-time Vehicle Engine Monitoring",
   "private": true,
   "workspaces": [
     "backend",

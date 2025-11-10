@@ -65,7 +65,7 @@ function App() {
     if (typeof window === "undefined") {
       return "dark";
     }
-    const stored = window.localStorage.getItem("fuelsense:theme");
+    const stored = window.localStorage.getItem("emsys:theme");
     if (stored === "light" || stored === "dark") {
       return stored;
     }
@@ -216,9 +216,7 @@ function App() {
     }
 
     const now = Date.now();
-    const seeds = Array.from({ length: 6 }, (_, index) =>
-      createRandomReading(now - index * 60000)
-    );
+    const seeds = Array.from({ length: 6 }, (_, index) => createRandomReading(now - index * 60000));
 
     dummyHistoryRef.current = seeds.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
     setIsUsingDummyData(true);
@@ -236,121 +234,130 @@ function App() {
     root.classList.remove("theme-dark", "theme-light");
     const nextClass = theme === "dark" ? "theme-dark" : "theme-light";
     root.classList.add(nextClass);
-    window.localStorage.setItem("fuelsense:theme", theme);
+    window.localStorage.setItem("emsys:theme", theme);
   }, [theme]);
 
-  const fetchStats = useCallback(async (range, filters) => {
-    setStatsLoading(true);
-    try {
-      setStatsError(null);
-      const activeFilters = filters ?? appliedHistoryFiltersRef.current;
-      const params = new URLSearchParams();
-      const startIso = toIsoString(activeFilters.start);
-      const endIso = toIsoString(activeFilters.end);
+  const fetchStats = useCallback(
+    async (range, filters) => {
+      setStatsLoading(true);
+      try {
+        setStatsError(null);
+        const activeFilters = filters ?? appliedHistoryFiltersRef.current;
+        const params = new URLSearchParams();
+        const startIso = toIsoString(activeFilters.start);
+        const endIso = toIsoString(activeFilters.end);
 
-      if (startIso) params.set("start", startIso);
-      if (endIso) params.set("end", endIso);
+        if (startIso) params.set("start", startIso);
+        if (endIso) params.set("end", endIso);
 
-      if (!startIso && !endIso) {
-        params.set("range", range);
-      } else {
-        params.set("range", "custom");
+        if (!startIso && !endIso) {
+          params.set("range", range);
+        } else {
+          params.set("range", "custom");
+        }
+
+        const response = await fetch(`${apiBaseUrl}/api/sensor-data/stats?${params.toString()}`);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch stats (${response.status})`);
+        }
+        const payload = await response.json();
+        setStats(payload);
+        setHasBackendError(false);
+        setIsUsingDummyData(false);
+      } catch (error) {
+        console.error("Failed to fetch stats", error);
+        setStatsError("Tidak bisa mengambil data statistik.");
+        setHasBackendError(true);
+        setIsUsingDummyData(true);
+        seedDummyData();
+      } finally {
+        setStatsLoading(false);
       }
+    },
+    [apiBaseUrl, seedDummyData]
+  );
 
-      const response = await fetch(`${apiBaseUrl}/api/sensor-data/stats?${params.toString()}`);
-      if (!response.ok) {
-        throw new Error(`Failed to fetch stats (${response.status})`);
+  const fetchChartData = useCallback(
+    async (filters) => {
+      setChartLoading(true);
+      try {
+        setChartError(null);
+        const activeFilters = filters ?? appliedHistoryFiltersRef.current;
+        const params = new URLSearchParams();
+        const startIso = toIsoString(activeFilters.start);
+        const endIso = toIsoString(activeFilters.end);
+
+        if (startIso) params.set("start", startIso);
+        if (endIso) params.set("end", endIso);
+
+        const limitForSeries = Math.max(activeFilters.limit * 5, 200);
+        params.set("limit", limitForSeries.toString());
+
+        const response = await fetch(`${apiBaseUrl}/api/sensor-data/series?${params.toString()}`);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch chart data (${response.status})`);
+        }
+        const payload = await response.json();
+        setChartData(payload.data);
+        setHasBackendError(false);
+        setIsUsingDummyData(false);
+        latestSeriesRef.current = payload.data ?? [];
+        updateSummaryDayWeek(payload.data ?? []);
+      } catch (error) {
+        console.error("Failed to fetch chart data", error);
+        setChartError("Tidak bisa mengambil data chart.");
+        setHasBackendError(true);
+        setIsUsingDummyData(true);
+        seedDummyData();
+      } finally {
+        setChartLoading(false);
       }
-      const payload = await response.json();
-      setStats(payload);
-      setHasBackendError(false);
-      setIsUsingDummyData(false);
-    } catch (error) {
-      console.error("Failed to fetch stats", error);
-      setStatsError("Tidak bisa mengambil data statistik.");
-      setHasBackendError(true);
-      setIsUsingDummyData(true);
-      seedDummyData();
-    } finally {
-      setStatsLoading(false);
-    }
-  }, [apiBaseUrl, seedDummyData]);
+    },
+    [apiBaseUrl, seedDummyData, updateSummaryDayWeek]
+  );
 
-  const fetchChartData = useCallback(async (filters) => {
-    setChartLoading(true);
-    try {
-      setChartError(null);
-      const activeFilters = filters ?? appliedHistoryFiltersRef.current;
-      const params = new URLSearchParams();
-      const startIso = toIsoString(activeFilters.start);
-      const endIso = toIsoString(activeFilters.end);
+  const fetchHistory = useCallback(
+    async (page = 1, filters) => {
+      try {
+        setHistoryError(null);
+        setHistoryLoading(true);
+        const activeFilters = filters ?? appliedHistoryFiltersRef.current;
+        const params = new URLSearchParams({
+          page: page.toString(),
+          limit: activeFilters.limit.toString(),
+        });
+        const startIso = toIsoString(activeFilters.start);
+        const endIso = toIsoString(activeFilters.end);
 
-      if (startIso) params.set("start", startIso);
-      if (endIso) params.set("end", endIso);
+        if (startIso) params.set("start", startIso);
+        if (endIso) params.set("end", endIso);
 
-      const limitForSeries = Math.max(activeFilters.limit * 5, 200);
-      params.set("limit", limitForSeries.toString());
-
-      const response = await fetch(`${apiBaseUrl}/api/sensor-data/series?${params.toString()}`);
-      if (!response.ok) {
-        throw new Error(`Failed to fetch chart data (${response.status})`);
+        const response = await fetch(`${apiBaseUrl}/api/sensor-data?${params.toString()}`);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch history (${response.status})`);
+        }
+        const payload = await response.json();
+        setHistory(payload.data);
+        setHistoryPagination(payload.pagination);
+        historyPageRef.current = payload.pagination.page;
+        setHasBackendError(false);
+        setIsUsingDummyData(false);
+        if (payload.pagination?.total !== undefined) {
+          setSummaryCounts((prev) => ({ ...prev, total: payload.pagination.total }));
+        }
+        updateSummaryDayWeek(latestSeriesRef.current.length ? latestSeriesRef.current : payload.data ?? []);
+      } catch (error) {
+        console.error("Failed to fetch history", error);
+        setHistoryError("Tidak bisa mengambil data histori.");
+        setHasBackendError(true);
+        setIsUsingDummyData(true);
+        seedDummyData();
+      } finally {
+        setHistoryLoading(false);
       }
-      const payload = await response.json();
-      setChartData(payload.data);
-      setHasBackendError(false);
-      setIsUsingDummyData(false);
-      latestSeriesRef.current = payload.data ?? [];
-      updateSummaryDayWeek(payload.data ?? []);
-    } catch (error) {
-      console.error("Failed to fetch chart data", error);
-      setChartError("Tidak bisa mengambil data chart.");
-      setHasBackendError(true);
-      setIsUsingDummyData(true);
-      seedDummyData();
-    } finally {
-      setChartLoading(false);
-    }
-  }, [apiBaseUrl, seedDummyData, updateSummaryDayWeek]);
-
-  const fetchHistory = useCallback(async (page = 1, filters) => {
-    try {
-      setHistoryError(null);
-      setHistoryLoading(true);
-      const activeFilters = filters ?? appliedHistoryFiltersRef.current;
-      const params = new URLSearchParams({
-        page: page.toString(),
-        limit: activeFilters.limit.toString(),
-      });
-      const startIso = toIsoString(activeFilters.start);
-      const endIso = toIsoString(activeFilters.end);
-
-      if (startIso) params.set("start", startIso);
-      if (endIso) params.set("end", endIso);
-
-      const response = await fetch(`${apiBaseUrl}/api/sensor-data?${params.toString()}`);
-      if (!response.ok) {
-        throw new Error(`Failed to fetch history (${response.status})`);
-      }
-      const payload = await response.json();
-      setHistory(payload.data);
-      setHistoryPagination(payload.pagination);
-      historyPageRef.current = payload.pagination.page;
-      setHasBackendError(false);
-      setIsUsingDummyData(false);
-      if (payload.pagination?.total !== undefined) {
-        setSummaryCounts((prev) => ({ ...prev, total: payload.pagination.total }));
-      }
-      updateSummaryDayWeek(latestSeriesRef.current.length ? latestSeriesRef.current : payload.data ?? []);
-    } catch (error) {
-      console.error("Failed to fetch history", error);
-      setHistoryError("Tidak bisa mengambil data histori.");
-      setHasBackendError(true);
-      setIsUsingDummyData(true);
-      seedDummyData();
-    } finally {
-      setHistoryLoading(false);
-    }
-  }, [apiBaseUrl, seedDummyData, updateSummaryDayWeek]);
+    },
+    [apiBaseUrl, seedDummyData, updateSummaryDayWeek]
+  );
 
   useEffect(() => {
     fetchHistory(1, appliedHistoryFiltersRef.current).catch(() => null);
@@ -519,11 +526,11 @@ function App() {
 
         // Calculate statistics
         const stats = {
-          torque: sortedData.map(d => d.torque),
-          fuelConsumption: sortedData.map(d => d.fuelConsumption),
-          rpm: sortedData.map(d => d.rpm),
-          temperature: sortedData.map(d => d.temperature),
-          maf: sortedData.map(d => d.maf),
+          torque: sortedData.map((d) => d.torque),
+          fuelConsumption: sortedData.map((d) => d.fuelConsumption),
+          rpm: sortedData.map((d) => d.rpm),
+          temperature: sortedData.map((d) => d.temperature),
+          maf: sortedData.map((d) => d.maf),
         };
 
         const calculateStats = (values) => ({
@@ -549,7 +556,7 @@ function App() {
 
         // Create Excel workbook with ExcelJS
         const workbook = new ExcelJS.Workbook();
-        workbook.creator = "FuelSense Monitor";
+        workbook.creator = "EMSys - Engine Monitoring System";
         workbook.created = now;
 
         // Sheet 1: Sensor Data
@@ -586,15 +593,12 @@ function App() {
 
         // Sheet 2: Summary
         const summarySheet = workbook.addWorksheet("Summary");
-        summarySheet.columns = [
-          { width: 25 },
-          { width: 20 },
-        ];
+        summarySheet.columns = [{ width: 25 }, { width: 20 }];
 
         // Add summary header
         summarySheet.mergeCells("A1:B1");
         const titleCell = summarySheet.getCell("A1");
-        titleCell.value = "FUELSENSE MONITOR - DATA SUMMARY";
+        titleCell.value = "EMSys - ENGINE MONITORING SYSTEM - DATA SUMMARY";
         titleCell.font = { bold: true, size: 14 };
         titleCell.alignment = { horizontal: "center" };
 
@@ -611,14 +615,7 @@ function App() {
         statsHeaderCell.font = { bold: true, size: 12 };
 
         // Add statistics table
-        const statsHeaderRow = summarySheet.addRow([
-          "Parameter",
-          "Current",
-          "Average",
-          "Minimum",
-          "Maximum",
-          "Unit",
-        ]);
+        const statsHeaderRow = summarySheet.addRow(["Parameter", "Current", "Average", "Minimum", "Maximum", "Unit"]);
         statsHeaderRow.font = { bold: true };
         statsHeaderRow.fill = {
           type: "pattern",
@@ -675,7 +672,7 @@ function App() {
 
         // Generate filename with timestamp
         const fileTimestamp = formatTimestamp(now).replace(/[: ]/g, "").replace(/-/g, "");
-        anchor.download = `FuelsenseData_${fileTimestamp}.xlsx`;
+        anchor.download = `EMSysData_${fileTimestamp}.xlsx`;
 
         document.body.appendChild(anchor);
         anchor.click();
@@ -719,7 +716,7 @@ function App() {
       const minutes = String(now.getMinutes()).padStart(2, "0");
       const seconds = String(now.getSeconds()).padStart(2, "0");
       const fileTimestamp = `${year}${month}${day}${hours}${minutes}${seconds}`;
-      anchor.download = `FuelsenseData_${fileTimestamp}.xlsx`;
+      anchor.download = `EMSysData_${fileTimestamp}.xlsx`;
 
       document.body.appendChild(anchor);
       anchor.click();
@@ -733,74 +730,72 @@ function App() {
     }
   }, [apiBaseUrl, hasBackendError, isUsingDummyData]);
 
-  const handleResetHistoryData = useCallback(async (options = "range") => {
-    const params = typeof options === "string" ? { mode: options } : options || {};
-    const mode = params.mode ?? "range";
-    const rangeOverride = params.range ?? null;
+  const handleResetHistoryData = useCallback(
+    async (options = "range") => {
+      const params = typeof options === "string" ? { mode: options } : options || {};
+      const mode = params.mode ?? "range";
+      const rangeOverride = params.range ?? null;
 
-    const confirmation = window.confirm(
-      mode === "all"
-        ? "Yakin ingin menghapus seluruh data sensor? Tindakan ini tidak dapat dibatalkan."
-        : "Yakin ingin menghapus data berdasarkan rentang yang dipilih?"
-    );
-    if (!confirmation) {
-      return;
-    }
+      const confirmation = window.confirm(mode === "all" ? "Yakin ingin menghapus seluruh data sensor? Tindakan ini tidak dapat dibatalkan." : "Yakin ingin menghapus data berdasarkan rentang yang dipilih?");
+      if (!confirmation) {
+        return;
+      }
 
-    if (isUsingDummyData || hasBackendError) {
-      setIsResettingHistory(true);
-      if (mode === "all") {
-        dummyHistoryRef.current = [];
-      } else {
-        const { start, end } = rangeOverride ?? appliedHistoryFiltersRef.current;
-        const startTs = start ? new Date(start).getTime() : Number.NEGATIVE_INFINITY;
-        const endTs = end ? new Date(end).getTime() : Number.POSITIVE_INFINITY;
+      if (isUsingDummyData || hasBackendError) {
+        setIsResettingHistory(true);
+        if (mode === "all") {
+          dummyHistoryRef.current = [];
+        } else {
+          const { start, end } = rangeOverride ?? appliedHistoryFiltersRef.current;
+          const startTs = start ? new Date(start).getTime() : Number.NEGATIVE_INFINITY;
+          const endTs = end ? new Date(end).getTime() : Number.POSITIVE_INFINITY;
 
-        dummyHistoryRef.current = dummyHistoryRef.current.filter((entry) => {
-          const ts = new Date(entry.timestamp).getTime();
-          if (Number.isNaN(ts)) return false;
-          return ts < startTs || ts > endTs;
+          dummyHistoryRef.current = dummyHistoryRef.current.filter((entry) => {
+            const ts = new Date(entry.timestamp).getTime();
+            if (Number.isNaN(ts)) return false;
+            return ts < startTs || ts > endTs;
+          });
+        }
+        updateDisplaysFromDummy(1, appliedHistoryFiltersRef.current.limit || 20);
+        setSensorData(null);
+        setIsResettingHistory(false);
+        return;
+      }
+
+      try {
+        setIsResettingHistory(true);
+        const params = new URLSearchParams();
+        if (mode !== "all") {
+          const { start, end } = rangeOverride ?? appliedHistoryFiltersRef.current;
+          const startIso = toIsoString(start);
+          const endIso = toIsoString(end);
+
+          if (startIso) params.set("start", startIso);
+          if (endIso) params.set("end", endIso);
+        }
+
+        const query = params.toString();
+        const target = query && mode !== "all" ? `${apiBaseUrl}/api/sensor-data?${query}` : `${apiBaseUrl}/api/sensor-data`;
+        const response = await fetch(target, {
+          method: "DELETE",
         });
+
+        if (!response.ok) {
+          throw new Error(`Failed to delete data (${response.status})`);
+        }
+
+        await fetchHistory(1, appliedHistoryFiltersRef.current);
+        await fetchStats(statsRangeRef.current, appliedHistoryFiltersRef.current);
+        await fetchChartData(appliedHistoryFiltersRef.current);
+      } catch (error) {
+        console.error("Failed to delete history", error);
+        setHistoryError("Gagal menghapus data.");
+      } finally {
+        setIsResettingHistory(false);
       }
-      updateDisplaysFromDummy(1, appliedHistoryFiltersRef.current.limit || 20);
-      setSensorData(null);
-      setIsResettingHistory(false);
-      return;
-    }
-
-    try {
-      setIsResettingHistory(true);
-      const params = new URLSearchParams();
-      if (mode !== "all") {
-        const { start, end } = rangeOverride ?? appliedHistoryFiltersRef.current;
-        const startIso = toIsoString(start);
-        const endIso = toIsoString(end);
-
-        if (startIso) params.set("start", startIso);
-        if (endIso) params.set("end", endIso);
-      }
-
-      const query = params.toString();
-      const target =
-        query && mode !== "all" ? `${apiBaseUrl}/api/sensor-data?${query}` : `${apiBaseUrl}/api/sensor-data`;
-      const response = await fetch(target, {
-        method: "DELETE",
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to delete data (${response.status})`);
-      }
-
-      await fetchHistory(1, appliedHistoryFiltersRef.current);
-      await fetchStats(statsRangeRef.current, appliedHistoryFiltersRef.current);
-      await fetchChartData(appliedHistoryFiltersRef.current);
-    } catch (error) {
-      console.error("Failed to delete history", error);
-      setHistoryError("Gagal menghapus data.");
-    } finally {
-      setIsResettingHistory(false);
-    }
-  }, [apiBaseUrl, fetchChartData, fetchHistory, fetchStats, hasBackendError, isUsingDummyData, updateDisplaysFromDummy]);
+    },
+    [apiBaseUrl, fetchChartData, fetchHistory, fetchStats, hasBackendError, isUsingDummyData, updateDisplaysFromDummy]
+  );
 
   const toggleTheme = useCallback(() => {
     setTheme((current) => (current === "dark" ? "light" : "dark"));

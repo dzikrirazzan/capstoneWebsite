@@ -52,16 +52,7 @@ const parseTimestamp = (value) => {
 // Create new sensor data entry (HTTP ingest)
 router.post("/sensor-data", async (req, res) => {
   try {
-    const {
-      timestamp,
-      rpm,
-      torque,
-      maf,
-      temperature,
-      fuelConsumption,
-      customSensor,
-      alertStatus,
-    } = req.body ?? {};
+    const { timestamp, rpm, torque, maf, temperature, fuelConsumption, customSensor, alertStatus } = req.body ?? {};
 
     const parsed = {
       rpm: parseNumeric(rpm),
@@ -306,14 +297,14 @@ router.get("/sensor-data/export", async (req, res) => {
 
     // Calculate statistics
     const stats = {
-      torque: { values: data.map(d => d.torque) },
-      fuelConsumption: { values: data.map(d => d.fuelConsumption) },
-      rpm: { values: data.map(d => d.rpm) },
-      temperature: { values: data.map(d => d.temperature) },
-      maf: { values: data.map(d => d.maf) },
+      torque: { values: data.map((d) => d.torque) },
+      fuelConsumption: { values: data.map((d) => d.fuelConsumption) },
+      rpm: { values: data.map((d) => d.rpm) },
+      temperature: { values: data.map((d) => d.temperature) },
+      maf: { values: data.map((d) => d.maf) },
     };
 
-    Object.keys(stats).forEach(key => {
+    Object.keys(stats).forEach((key) => {
       const values = stats[key].values;
       stats[key].current = values[values.length - 1];
       stats[key].average = values.reduce((sum, v) => sum + v, 0) / values.length;
@@ -331,7 +322,7 @@ router.get("/sensor-data/export", async (req, res) => {
 
     // Create workbook
     const workbook = new ExcelJS.Workbook();
-    workbook.creator = "FuelSense Monitor";
+    workbook.creator = "EMSys - Engine Monitoring System";
     workbook.created = new Date();
 
     // ===== SHEET 1: Sensor Data =====
@@ -376,7 +367,7 @@ router.get("/sensor-data/export", async (req, res) => {
     summarySheet.getColumn(6).width = 10;
 
     // Title
-    summarySheet.getCell("A1").value = "FUELSENSE MONITOR - DATA SUMMARY";
+    summarySheet.getCell("A1").value = "EMSys - ENGINE MONITORING SYSTEM - DATA SUMMARY";
     summarySheet.getCell("A1").font = { bold: true, size: 14 };
     summarySheet.mergeCells("A1:F1");
 
@@ -451,19 +442,12 @@ router.get("/sensor-data/export", async (req, res) => {
 
     // Add chart data (numbered sequence for easy plotting)
     data.forEach((row, index) => {
-      chartSheet.addRow([
-        index + 1,
-        row.torque,
-        row.fuelConsumption,
-        row.rpm,
-        row.temperature,
-        row.maf,
-      ]);
+      chartSheet.addRow([index + 1, row.torque, row.fuelConsumption, row.rpm, row.temperature, row.maf]);
     });
 
     // Generate filename
     const fileTimestamp = formatTimestamp(now).replace(/[: ]/g, "").replace(/-/g, "");
-    const filename = `FuelsenseData_${fileTimestamp}.xlsx`;
+    const filename = `EMSysData_${fileTimestamp}.xlsx`;
 
     // Write to buffer
     const buffer = await workbook.xlsx.writeBuffer();

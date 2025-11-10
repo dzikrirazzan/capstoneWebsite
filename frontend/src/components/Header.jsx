@@ -8,7 +8,6 @@ const navigation = [
 ];
 
 export default function Header({ theme, onToggleTheme }) {
-
   return (
     <header className="sticky top-0 z-50 border-b border-[var(--border-color)] bg-[var(--bg-root)]/85 backdrop-blur">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 px-4 py-4 md:flex-row md:items-center md:justify-between">
@@ -18,7 +17,7 @@ export default function Header({ theme, onToggleTheme }) {
               <Activity className="h-6 w-6 text-[var(--accent)]" />
             </div>
             <div>
-              <h1 className="text-lg font-semibold text-[var(--text-primary)] md:text-xl">FuelSense Monitor</h1>
+              <h1 className="text-lg font-semibold text-[var(--text-primary)] md:text-xl">EMSys - Engine Monitoring System</h1>
               <p className="text-sm text-[var(--text-muted)]">Dasbor pemantauan mesin secara real-time</p>
             </div>
           </div>
@@ -28,11 +27,7 @@ export default function Header({ theme, onToggleTheme }) {
             aria-label="Toggle theme"
             className="ml-4 flex h-10 w-10 items-center justify-center rounded-xl border border-[var(--border-color)] bg-[var(--bg-card)] transition hover:border-[var(--accent)] md:hidden"
           >
-            {theme === "dark" ? (
-              <Sun className="h-4 w-4 text-[var(--text-secondary)]" />
-            ) : (
-              <Moon className="h-4 w-4 text-[var(--text-secondary)]" />
-            )}
+            {theme === "dark" ? <Sun className="h-4 w-4 text-[var(--text-secondary)]" /> : <Moon className="h-4 w-4 text-[var(--text-secondary)]" />}
           </button>
         </div>
 
@@ -44,9 +39,7 @@ export default function Header({ theme, onToggleTheme }) {
               className={({ isActive }) =>
                 cn(
                   "whitespace-nowrap rounded-lg px-3 py-1 transition",
-                  isActive
-                    ? "bg-[var(--accent-soft)] text-[var(--accent)] md:bg-transparent md:text-[var(--text-primary)]"
-                    : "hover:bg-[var(--accent-soft)] hover:text-[var(--accent)] md:hover:bg-transparent"
+                  isActive ? "bg-[var(--accent-soft)] text-[var(--accent)] md:bg-transparent md:text-[var(--text-primary)]" : "hover:bg-[var(--accent-soft)] hover:text-[var(--accent)] md:hover:bg-transparent"
                 )
               }
             >
@@ -56,16 +49,8 @@ export default function Header({ theme, onToggleTheme }) {
         </nav>
 
         <div className="flex items-center justify-end">
-          <button
-            onClick={onToggleTheme}
-            aria-label="Toggle theme"
-            className="h-10 w-10 flex items-center justify-center rounded-xl border border-[var(--border-color)] bg-[var(--bg-card)] transition hover:border-[var(--accent)]"
-          >
-            {theme === "dark" ? (
-              <Sun className="h-4 w-4 text-[var(--text-secondary)]" />
-            ) : (
-              <Moon className="h-4 w-4 text-[var(--text-secondary)]" />
-            )}
+          <button onClick={onToggleTheme} aria-label="Toggle theme" className="h-10 w-10 flex items-center justify-center rounded-xl border border-[var(--border-color)] bg-[var(--bg-card)] transition hover:border-[var(--accent)]">
+            {theme === "dark" ? <Sun className="h-4 w-4 text-[var(--text-secondary)]" /> : <Moon className="h-4 w-4 text-[var(--text-secondary)]" />}
           </button>
         </div>
       </div>

@@ -6,8 +6,7 @@ import { fileURLToPath } from "url";
 import sensorRoutes from "./routes/sensorRoutes.js";
 
 const buildCorsOptions = () => {
-  const explicitOrigins =
-    process.env.ALLOWED_ORIGINS || process.env.FRONTEND_URL || process.env.DESKTOP_APP_ORIGINS;
+  const explicitOrigins = process.env.ALLOWED_ORIGINS || process.env.FRONTEND_URL || process.env.DESKTOP_APP_ORIGINS;
 
   if (!explicitOrigins) {
     return { origin: "*" };
@@ -30,11 +29,7 @@ const resolveStaticDirectory = () => {
     candidates.push(path.resolve(__dirname, process.env.FRONTEND_DIST_PATH));
   }
 
-  candidates.push(
-    path.resolve(__dirname, "../public"),
-    path.resolve(__dirname, "../../frontend/dist"),
-    path.resolve(process.cwd(), "public")
-  );
+  candidates.push(path.resolve(__dirname, "../public"), path.resolve(__dirname, "../../frontend/dist"), path.resolve(process.cwd(), "public"));
 
   return candidates.find((candidate) => {
     try {
@@ -58,7 +53,7 @@ export function createApp() {
   app.get("/api/health", (_req, res) => {
     res.json({
       status: "ok",
-      message: "FuelSense Monitor API is running",
+      message: "EMSys - Engine Monitoring System API is running",
       timestamp: new Date().toISOString(),
     });
   });
