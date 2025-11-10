@@ -7,7 +7,8 @@
   "scripts": {
     "dev": "npm run prisma:generate && node --watch src/server.js",
     "build": "npm run prisma:generate",
-    "start": "npm run prisma:push && node src/server.js",
+    "start": "node src/server.js",
+    "start:migrate": "npm run prisma:generate && npm run prisma:deploy && node src/server.js",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:deploy": "prisma migrate deploy",
