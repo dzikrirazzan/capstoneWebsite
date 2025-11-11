@@ -19,6 +19,22 @@ const CURRENT_METRICS = [
     format: (value) => `${value.toFixed(0)} RPM`,
   },
   {
+    label: "Torsi",
+    colorClass: "text-[#3b82f6]",
+    icon: Activity,
+    key: "torque",
+    unit: "Nm",
+    format: (value) => `${formatNumber(value, 1)} Nm`,
+  },
+  {
+    label: "MAF",
+    colorClass: "text-[#8b5cf6]",
+    icon: TrendingUp,
+    key: "maf",
+    unit: "g/s",
+    format: (value) => `${formatNumber(value, 1)} g/s`,
+  },
+  {
     label: "Suhu",
     colorClass: "text-[#f59e0b]",
     icon: Thermometer,
@@ -102,7 +118,7 @@ export default function StatsPanel({ sensorData, stats, statsError, statsRange, 
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
         {currentMetrics.map((stat) => {
           const Icon = stat.icon;
           return (
@@ -160,15 +176,15 @@ export default function StatsPanel({ sensorData, stats, statsError, statsRange, 
                     </p>
                   </div>
                   <div>
-                    <p className="text-[11px] uppercase tracking-wide text-[var(--text-muted)]">Avg</p>
-                    <p className="text-base font-semibold text-[var(--text-secondary)]">
-                      {formatNumber(stats[metric.key].avg, metric.decimals)} {metric.unit}
-                    </p>
-                  </div>
-                  <div>
                     <p className="text-[11px] uppercase tracking-wide text-[var(--text-muted)]">Max</p>
                     <p className="text-base font-semibold text-[var(--text-secondary)]">
                       {formatNumber(stats[metric.key].max, metric.decimals)} {metric.unit}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-[11px] uppercase tracking-wide text-[var(--text-muted)]">Avg</p>
+                    <p className="text-base font-semibold text-[var(--text-secondary)]">
+                      {formatNumber(stats[metric.key].avg, metric.decimals)} {metric.unit}
                     </p>
                   </div>
                 </div>
