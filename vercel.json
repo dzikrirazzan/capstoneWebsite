@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "buildCommand": "cd backend && npm install && npx prisma generate && cd ../frontend && npm install && npm run build",
+  "buildCommand": "cd api && npm install && cd ../backend && npm install && npx prisma generate && cd ../frontend && npm install && npm run build",
   "installCommand": "echo 'Skipping root install'",
   "outputDirectory": "frontend/dist",
   "functions": {
