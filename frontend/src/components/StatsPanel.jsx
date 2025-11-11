@@ -137,7 +137,7 @@ export default function StatsPanel({ sensorData, stats, statsError, statsRange, 
           {stats && (
             <div className="flex flex-col text-xs text-[var(--text-muted)] sm:items-end">
               <span className="uppercase tracking-wide">
-                {stats.count} data • Rentang {stats.timeRange.toUpperCase()}
+                {stats.count || 0} data • Rentang {(stats.timeRange || "custom").toUpperCase()}
               </span>
               {periodLabel && <span className="mt-1 text-[11px]">{periodLabel}</span>}
             </div>

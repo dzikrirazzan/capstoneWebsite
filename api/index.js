@@ -53,6 +53,9 @@ export default async function handler(req, res) {
 
     // Get stats
     if (path === "/api/sensor-data/stats" || path.startsWith("/api/sensor-data/stats")) {
+      const urlObj = new URL(req.url, `http://${req.headers.host}`);
+      const range = urlObj.searchParams.get("range") || "24h";
+
       const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
       const data = await prisma.sensorData.findMany({
         where: { timestamp: { gte: oneDayAgo } },
@@ -65,6 +68,12 @@ export default async function handler(req, res) {
         temperature: { avg: 0, min: 0, max: 0 },
         maf: { avg: 0, min: 0, max: 0 },
         fuelConsumption: { avg: 0, min: 0, max: 0 },
+        count: data.length,
+        timeRange: range,
+        period: {
+          start: data.length > 0 ? data[data.length - 1].timestamp : null,
+          end: data.length > 0 ? data[0].timestamp : null,
+        },
       };
 
       if (data.length > 0) {
