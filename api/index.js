@@ -4,9 +4,9 @@ const prisma = new PrismaClient();
 
 export default async function handler(req, res) {
   const { method, url } = req;
-  
+
   // Parse URL properly
-  const path = url.split('?')[0]; // Remove query params
+  const path = url.split("?")[0]; // Remove query params
 
   // CORS headers
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -32,7 +32,7 @@ export default async function handler(req, res) {
       const latest = await prisma.sensorData.findFirst({
         orderBy: { timestamp: "desc" },
       });
-      
+
       // Return empty object if no data
       if (!latest) {
         return res.status(200).json({
@@ -44,10 +44,10 @@ export default async function handler(req, res) {
           temperature: 0,
           fuelConsumption: 0,
           customSensor: null,
-          alertStatus: false
+          alertStatus: false,
         });
       }
-      
+
       return res.status(200).json(latest);
     }
 
@@ -84,40 +84,44 @@ export default async function handler(req, res) {
 
     // Get time series data
     if (path === "/api/sensor-data/series" || path.startsWith("/api/sensor-data/series")) {
+      const urlObj = new URL(req.url, `http://${req.headers.host}`);
+      const limit = parseInt(urlObj.searchParams.get("limit") || "288", 10);
       const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+
       const data = await prisma.sensorData.findMany({
         where: { timestamp: { gte: oneDayAgo } },
         orderBy: { timestamp: "asc" },
-        take: 288, // 24 hours * 12 (every 5 min)
+        take: limit,
       });
-      return res.status(200).json(data);
+
+      return res.status(200).json({ data: data });
     }
 
     // Get all sensor data with pagination (must be last)
     if (path === "/api/sensor-data") {
       // Parse query params for pagination
       const urlObj = new URL(req.url, `http://${req.headers.host}`);
-      const page = parseInt(urlObj.searchParams.get('page') || '1', 10);
-      const limit = parseInt(urlObj.searchParams.get('limit') || '100', 10);
+      const page = parseInt(urlObj.searchParams.get("page") || "1", 10);
+      const limit = parseInt(urlObj.searchParams.get("limit") || "100", 10);
       const skip = (page - 1) * limit;
-      
+
       const [data, total] = await Promise.all([
         prisma.sensorData.findMany({
           orderBy: { timestamp: "desc" },
           take: limit,
           skip: skip,
         }),
-        prisma.sensorData.count()
+        prisma.sensorData.count(),
       ]);
-      
+
       return res.status(200).json({
         data: data,
         pagination: {
           page: page,
           limit: limit,
           total: total,
-          totalPages: Math.ceil(total / limit)
-        }
+          totalPages: Math.ceil(total / limit),
+        },
       });
     }
 
