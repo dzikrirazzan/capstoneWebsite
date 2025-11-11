@@ -3,6 +3,7 @@
 ## ✅ Status: SIAP DEPLOY
 
 Proyek ini sudah dikonfigurasi untuk deploy ke Vercel dengan fitur:
+
 - ✅ Frontend React + Vite
 - ✅ Backend Express.js (Serverless Functions)
 - ✅ MySQL Database (eksternal)
@@ -13,25 +14,58 @@ Proyek ini sudah dikonfigurasi untuk deploy ke Vercel dengan fitur:
 ## 📋 Prerequisites
 
 1. **Akun Vercel** (gratis): https://vercel.com/signup
-2. **Database MySQL** yang accessible dari internet:
-   - Railway MySQL (kamu sudah punya ✅)
-   - Atau PlanetScale (MySQL-compatible, free tier bagus)
-   - Atau Supabase PostgreSQL (bisa switch dari MySQL)
+2. **Database** yang accessible dari internet (pilih salah satu):
+
+   **Option A: Railway MySQL** (kamu sudah punya ✅)
+
+   - Good for: Quick start, familiar dengan MySQL
+   - Limit: 500 jam/bulan (~20 hari)
+
+   **Option B: Supabase PostgreSQL** (RECOMMENDED! 🏆)
+
+   - Good for: Production, unlimited uptime
+   - Limit: 500 MB storage, 5 GB bandwidth/bulan
+   - Setup guide: `SETUP_SUPABASE.md`
+
+   **Option C: PlanetScale MySQL**
+
+   - Good for: MySQL-compatible, serverless
+   - Limit: 5 GB storage, 1 billion reads/bulan
+
+> 💡 **Recommendation:** Pakai **Supabase** untuk production! Lihat `DATABASE_COMPARISON.md` untuk perbandingan detail.
 
 ---
 
 ## 🎯 Langkah-Langkah Deploy
 
-### **Step 1: Setup Database di Railway (SUDAH ADA)**
+### **Step 1: Setup Database**
+
+**Option A: Railway MySQL (Current)**
 
 Kamu sudah punya Railway MySQL, pastikan:
+
 - Database sudah running
 - `DATABASE_URL` sudah ada
 
 Cek Railway dashboard untuk `DATABASE_URL`:
+
 ```
 mysql://user:password@host:port/database
 ```
+
+**Option B: Supabase PostgreSQL (RECOMMENDED)**
+
+1. Buka https://supabase.com dan buat account
+2. Create new project
+3. Copy connection string dari Dashboard → Settings → Database
+4. Kamu akan dapat 2 URLs:
+   ```
+   DATABASE_URL=postgresql://...pooler.supabase.com:6543/postgres?pgbouncer=true
+   DIRECT_URL=postgresql://...pooler.supabase.com:5432/postgres
+   ```
+5. Follow migration guide: `SETUP_SUPABASE.md`
+
+> 💡 **Supabase benefits:** Unlimited uptime, auto backup, better dashboard, Singapore region!
 
 ---
 
@@ -56,6 +90,7 @@ git push origin main
 4. Klik **Import**
 
 **Configure Project:**
+
 - Framework Preset: **Vite**
 - Root Directory: `./` (leave as is)
 - Build Command: `npm run build:frontend`
@@ -63,12 +98,22 @@ git push origin main
 
 5. Klik **"Environment Variables"** dan tambahkan:
 
+**Untuk Railway MySQL:**
+
 ```env
 DATABASE_URL=mysql://user:password@host:port/database
 NODE_ENV=production
 ```
 
-> 💡 Copy `DATABASE_URL` dari Railway dashboard kamu
+**Untuk Supabase PostgreSQL:**
+
+```env
+DATABASE_URL=postgresql://postgres.[ref]:[password]@...supabase.com:6543/postgres?pgbouncer=true
+DIRECT_URL=postgresql://postgres.[ref]:[password]@...supabase.com:5432/postgres
+NODE_ENV=production
+```
+
+> 💡 Copy `DATABASE_URL` dari Railway/Supabase dashboard kamu
 
 6. Klik **Deploy** 🚀
 
@@ -136,6 +181,7 @@ npm run seed
 ## 🔧 Konfigurasi File yang Sudah Dibuat
 
 ### **vercel.json**
+
 ```json
 {
   "version": 2,
@@ -162,6 +208,7 @@ npm run seed
 ```
 
 ### **.vercelignore**
+
 File untuk exclude dari deployment (optimize size)
 
 ---
@@ -169,11 +216,13 @@ File untuk exclude dari deployment (optimize size)
 ## 🌐 Setelah Deploy
 
 Vercel akan memberikan URL seperti:
+
 ```
 https://capstonewebsite.vercel.app
 ```
 
 **Auto Deploy:**
+
 - Setiap push ke `main` branch → auto deploy
 - Pull Request → preview deployment
 
@@ -182,25 +231,33 @@ https://capstonewebsite.vercel.app
 ## 🐛 Troubleshooting
 
 ### **Problem: API tidak jalan**
+
 **Solution:**
+
 - Cek Environment Variables di Vercel Dashboard
 - Pastikan `DATABASE_URL` benar
 - Cek Vercel Function Logs di Dashboard
 
 ### **Problem: Database connection error**
+
 **Solution:**
+
 - Pastikan Railway database accessible dari public
 - Check Railway database status
 - Verify `DATABASE_URL` format benar
 
 ### **Problem: Build failed**
+
 **Solution:**
+
 - Cek Vercel build logs
 - Pastikan `npm run build:frontend` jalan di local
 - Cek `package.json` dependencies
 
 ### **Problem: Prisma error "Can't reach database"**
+
 **Solution:**
+
 ```bash
 # Generate Prisma Client dulu
 cd backend
@@ -214,17 +271,18 @@ git push
 
 ## 💰 Cost Comparison: Vercel vs Railway
 
-| Feature | Vercel Free | Railway Free |
-|---------|-------------|--------------|
-| Hosting | ✅ Unlimited | ✅ 500 jam/bulan |
-| Bandwidth | 100 GB/bulan | Terbatas |
-| Build Time | 100 jam/bulan | - |
-| Serverless Functions | ✅ Yes | - |
-| Database | ❌ No (perlu eksternal) | ✅ MySQL included |
-| Auto Deploy | ✅ Yes | ✅ Yes |
-| Custom Domain | ✅ Yes | ✅ Yes |
+| Feature              | Vercel Free             | Railway Free      |
+| -------------------- | ----------------------- | ----------------- |
+| Hosting              | ✅ Unlimited            | ✅ 500 jam/bulan  |
+| Bandwidth            | 100 GB/bulan            | Terbatas          |
+| Build Time           | 100 jam/bulan           | -                 |
+| Serverless Functions | ✅ Yes                  | -                 |
+| Database             | ❌ No (perlu eksternal) | ✅ MySQL included |
+| Auto Deploy          | ✅ Yes                  | ✅ Yes            |
+| Custom Domain        | ✅ Yes                  | ✅ Yes            |
 
 **💡 Recommendation:**
+
 - **Frontend + Backend API**: Deploy ke **Vercel** ✅
 - **Database**: Tetap di **Railway** ✅
 - Best of both worlds! 🎉
