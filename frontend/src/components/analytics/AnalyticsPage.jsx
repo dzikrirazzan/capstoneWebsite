@@ -34,6 +34,7 @@ function AnalyticsPage({ theme, onToggleTheme }) {
     let score = 100;
     let issues = [];
     let deductions = []; // Track all deductions for explanation
+    let positives = []; // Track positive aspects
 
     // Temperature analysis (20 points max)
     const avgTemp = data.reduce((sum, d) => sum + d.temperature, 0) / data.length;
@@ -42,19 +43,32 @@ function AnalyticsPage({ theme, onToggleTheme }) {
 
     if (maxTemp > HEALTH_THRESHOLDS.temperature.critical) {
       score -= 20;
-      deductions.push({ points: 20, reason: "Suhu Mesin" });
-      issues.push({ 
-        severity: "critical", 
-        message: `Suhu kritikal ${maxTemp.toFixed(1)}°C (>110°C) - Risiko overheat, perlu pendinginan segera! [-20 poin]`, 
-        icon: Thermometer 
+      deductions.push({ points: 20, reason: "Suhu Mesin Kritikal" });
+      issues.push({
+        severity: "critical",
+        message: `🔴 KRITIS: Suhu ${maxTemp.toFixed(1)}°C melampaui batas aman (>110°C) - Risiko overheat & kerusakan komponen! Segera matikan mesin dan periksa radiator/coolant. [-20 poin dari aspek Suhu]`,
+        icon: Thermometer,
       });
     } else if (maxTemp > HEALTH_THRESHOLDS.temperature.warning) {
       score -= 10;
-      deductions.push({ points: 10, reason: "Suhu Mesin" });
-      issues.push({ 
-        severity: "warning", 
-        message: `Suhu tinggi ${maxTemp.toFixed(1)}°C (>100°C) - Periksa sistem pendingin dan radiator [-10 poin]`, 
-        icon: Thermometer 
+      deductions.push({ points: 10, reason: "Suhu Mesin Tinggi" });
+      issues.push({
+        severity: "warning",
+        message: `🟡 PERINGATAN: Suhu ${maxTemp.toFixed(1)}°C cukup tinggi (>100°C) - Sistem pendingin kurang optimal. Periksa kondisi radiator, water pump, dan thermostat. [-10 dari 20 poin aspek Suhu, tersisa +10 poin]`,
+        icon: Thermometer,
+      });
+      positives.push({ points: 10, reason: "Suhu masih dalam batas toleransi (belum kritikal)" });
+    } else if (avgTemp >= HEALTH_THRESHOLDS.temperature.ideal - 10 && avgTemp <= HEALTH_THRESHOLDS.temperature.ideal + 10) {
+      positives.push({ 
+        points: 20, 
+        reason: `Suhu ideal ${avgTemp.toFixed(1)}°C (target: ${HEALTH_THRESHOLDS.temperature.ideal}°C ±10°C) - Sistem pendingin bekerja sempurna!`,
+        category: "Suhu Mesin"
+      });
+    } else {
+      positives.push({ 
+        points: 20, 
+        reason: `Suhu normal ${avgTemp.toFixed(1)}°C (max: ${maxTemp.toFixed(1)}°C, di bawah ${HEALTH_THRESHOLDS.temperature.warning}°C)`,
+        category: "Suhu Mesin"
       });
     }
 
@@ -62,23 +76,36 @@ function AnalyticsPage({ theme, onToggleTheme }) {
     const avgRpm = data.reduce((sum, d) => sum + d.rpm, 0) / data.length;
     const maxRpm = Math.max(...data.map((d) => d.rpm));
     const overRevCount = data.filter((d) => d.rpm > HEALTH_THRESHOLDS.rpm.warning).length;
-    const overRevPercentage = (overRevCount / data.length * 100).toFixed(1);
+    const overRevPercentage = ((overRevCount / data.length) * 100).toFixed(1);
 
     if (maxRpm > HEALTH_THRESHOLDS.rpm.critical) {
       score -= 15;
-      deductions.push({ points: 15, reason: "RPM Ekstrem" });
-      issues.push({ 
-        severity: "critical", 
-        message: `Over-revving ekstrem ${maxRpm} RPM (>6000) - Risiko kerusakan mesin! [-15 poin]`, 
-        icon: Gauge 
+      deductions.push({ points: 15, reason: "Over-revving Ekstrem" });
+      issues.push({
+        severity: "critical",
+        message: `🔴 KRITIS: RPM mencapai ${maxRpm} (>6000) - Risiko valve float & kerusakan piston! Ganti oli segera, hindari akselerasi maksimal. [-15 poin dari aspek RPM]`,
+        icon: Gauge,
       });
     } else if (overRevCount > data.length * 0.2) {
       score -= 10;
-      deductions.push({ points: 10, reason: "RPM Tinggi" });
-      issues.push({ 
-        severity: "warning", 
-        message: `RPM sering >5000 (${overRevPercentage}% waktu, max: ${maxRpm}) - Kurangi akselerasi agresif [-10 poin]`, 
-        icon: Gauge 
+      deductions.push({ points: 10, reason: "RPM Sering Tinggi" });
+      issues.push({
+        severity: "warning",
+        message: `🟡 PERINGATAN: RPM >5000 terjadi ${overRevPercentage}% waktu (max: ${maxRpm}) - Gaya berkendara terlalu agresif, mempercepat keausan mesin. Gunakan gigi lebih tinggi & kurangi akselerasi mendadak. [-10 dari 15 poin aspek RPM, tersisa +5 poin]`,
+        icon: Gauge,
+      });
+      positives.push({ points: 5, reason: "RPM belum mencapai zona berbahaya (masih di bawah 6000)" });
+    } else if (avgRpm >= HEALTH_THRESHOLDS.rpm.idle && avgRpm <= HEALTH_THRESHOLDS.rpm.normal) {
+      positives.push({ 
+        points: 15, 
+        reason: `RPM stabil ${avgRpm} (range ideal: ${HEALTH_THRESHOLDS.rpm.idle}-${HEALTH_THRESHOLDS.rpm.normal}) - Gaya berkendara efisien & ekonomis!`,
+        category: "Performa RPM"
+      });
+    } else {
+      positives.push({ 
+        points: 15, 
+        reason: `RPM aman (avg: ${avgRpm}, max: ${maxRpm}, jarang >5000)`,
+        category: "Performa RPM"
       });
     }
 
@@ -88,34 +115,61 @@ function AnalyticsPage({ theme, onToggleTheme }) {
 
     if (maxTorque > HEALTH_THRESHOLDS.torque.high) {
       score -= 5;
-      deductions.push({ points: 5, reason: "Torsi Tinggi" });
-      issues.push({ 
-        severity: "info", 
-        message: `Torsi tinggi ${maxTorque.toFixed(1)} Nm (>300) - Beban kerja berat, perhatikan transmisi [-5 poin]`, 
-        icon: Activity 
+      deductions.push({ points: 5, reason: "Torsi Sangat Tinggi" });
+      issues.push({
+        severity: "info",
+        message: `🔵 INFO: Torsi ${maxTorque.toFixed(1)} Nm (>300) - Beban kerja sangat berat terdeteksi (tanjakan/muatan berat). Perhatikan kondisi transmisi & kopling. [-5 dari 20 poin aspek Torsi, tersisa +15 poin]`,
+        icon: Activity,
       });
-    }
-    if (avgTorque < HEALTH_THRESHOLDS.torque.low) {
+      positives.push({ points: 15, reason: "Mesin mampu menghasilkan torsi tinggi (power reserve baik)" });
+    } else if (avgTorque < HEALTH_THRESHOLDS.torque.low) {
       score -= 10;
-      deductions.push({ points: 10, reason: "Performa Torsi" });
-      issues.push({ 
-        severity: "warning", 
-        message: `Torsi rendah ${avgTorque.toFixed(1)} Nm (<100) - Performa lemah, periksa busi & filter udara [-10 poin]`, 
-        icon: Activity 
+      deductions.push({ points: 10, reason: "Torsi Lemah" });
+      issues.push({
+        severity: "warning",
+        message: `🟡 PERINGATAN: Torsi rendah ${avgTorque.toFixed(1)} Nm (<100) - Tenaga mesin kurang, akselerasi lemah. Kemungkinan: busi aus, filter udara kotor, atau masalah injektor. Servis diperlukan. [-10 dari 20 poin aspek Torsi, tersisa +10 poin]`,
+        icon: Activity,
+      });
+      positives.push({ points: 10, reason: "Mesin masih bisa beroperasi meski performa turun" });
+    } else if (avgTorque >= HEALTH_THRESHOLDS.torque.normal - 50 && avgTorque <= HEALTH_THRESHOLDS.torque.normal + 50) {
+      positives.push({ 
+        points: 20, 
+        reason: `Torsi optimal ${avgTorque.toFixed(1)} Nm (target: ${HEALTH_THRESHOLDS.torque.normal} Nm ±50) - Performa mesin sangat baik!`,
+        category: "Tenaga Torsi"
+      });
+    } else {
+      positives.push({ 
+        points: 20, 
+        reason: `Torsi normal ${avgTorque.toFixed(1)} Nm (range sehat: ${HEALTH_THRESHOLDS.torque.low}-${HEALTH_THRESHOLDS.torque.high})`,
+        category: "Tenaga Torsi"
       });
     }
 
     // MAF analysis (15 points max)
     const avgMaf = data.reduce((sum, d) => sum + d.maf, 0) / data.length;
     const mafVariance = data.reduce((sum, d) => sum + Math.pow(d.maf - avgMaf, 2), 0) / data.length;
+    const mafStdDev = Math.sqrt(mafVariance);
 
     if (mafVariance > 500) {
       score -= 10;
-      deductions.push({ points: 10, reason: "Aliran Udara" });
-      issues.push({ 
-        severity: "warning", 
-        message: `Aliran udara tidak stabil (variance: ${mafVariance.toFixed(0)}) - Bersihkan/ganti MAF sensor [-10 poin]`, 
-        icon: Wind 
+      deductions.push({ points: 10, reason: "Aliran Udara Tidak Stabil" });
+      issues.push({
+        severity: "warning",
+        message: `🟡 PERINGATAN: Aliran udara fluktuatif (variance: ${mafVariance.toFixed(0)}, std dev: ${mafStdDev.toFixed(1)}) - MAF sensor kotor/rusak atau ada kebocoran intake. Bersihkan MAF dengan cleaner khusus atau ganti jika perlu. [-10 dari 15 poin aspek MAF, tersisa +5 poin]`,
+        icon: Wind,
+      });
+      positives.push({ points: 5, reason: "Sensor MAF masih memberikan pembacaan (belum mati total)" });
+    } else if (mafVariance < 100) {
+      positives.push({ 
+        points: 15, 
+        reason: `Aliran udara sangat stabil (variance: ${mafVariance.toFixed(0)}) - MAF sensor bersih & intake system rapat!`,
+        category: "Sistem Udara (MAF)"
+      });
+    } else {
+      positives.push({ 
+        points: 15, 
+        reason: `Aliran udara stabil (avg: ${avgMaf.toFixed(1)} g/s, variance: ${mafVariance.toFixed(0)} dalam batas normal)`,
+        category: "Sistem Udara (MAF)"
       });
     }
 
@@ -124,12 +178,58 @@ function AnalyticsPage({ theme, onToggleTheme }) {
 
     if (avgFuel > HEALTH_THRESHOLDS.fuelConsumption.warning) {
       score -= 10;
-      deductions.push({ points: 10, reason: "Konsumsi BBM" });
-      issues.push({ 
-        severity: "warning", 
-        message: `Konsumsi BBM boros ${avgFuel.toFixed(2)} L/h (>15) - Periksa injektor & gaya berkendara [-10 poin]`, 
-        icon: Droplet 
+      deductions.push({ points: 10, reason: "Konsumsi BBM Boros" });
+      issues.push({
+        severity: "warning",
+        message: `🟡 PERINGATAN: Konsumsi ${avgFuel.toFixed(2)} L/h sangat boros (>15 L/h) - Penyebab: injektor kotor, sensor O2 rusak, atau gaya berkendara agresif. Lakukan tuneup & eco-driving. [-10 dari 10 poin aspek Efisiensi BBM, tersisa 0 poin]`,
+        icon: Droplet,
       });
+    } else if (avgFuel <= HEALTH_THRESHOLDS.fuelConsumption.efficient) {
+      positives.push({ 
+        points: 10, 
+        reason: `Konsumsi sangat efisien ${avgFuel.toFixed(2)} L/h (≤8 L/h) - Injektor bersih, AFR optimal, gaya berkendara ekonomis!`,
+        category: "Efisiensi BBM"
+      });
+    } else if (avgFuel <= HEALTH_THRESHOLDS.fuelConsumption.normal) {
+      positives.push({ 
+        points: 10, 
+        reason: `Konsumsi normal ${avgFuel.toFixed(2)} L/h (8-12 L/h range standar)`,
+        category: "Efisiensi BBM"
+      });
+    } else {
+      positives.push({ 
+        points: 10, 
+        reason: `Konsumsi masih wajar ${avgFuel.toFixed(2)} L/h (di bawah ${HEALTH_THRESHOLDS.fuelConsumption.warning} L/h)`,
+        category: "Efisiensi BBM"
+      });
+    }
+
+    // Additional stability analysis (20 points bonus)
+    const tempStability = data.reduce((sum, d) => sum + Math.pow(d.temperature - avgTemp, 2), 0) / data.length;
+    const rpmStability = data.reduce((sum, d) => sum + Math.pow(d.rpm - avgRpm, 2), 0) / data.length;
+    
+    if (tempStability < 25 && rpmStability < 100000) {
+      positives.push({ 
+        points: 20, 
+        reason: "Mesin sangat stabil - Suhu & RPM konsisten tanpa fluktuasi berlebihan",
+        category: "Stabilitas Mesin (Bonus)"
+      });
+    } else if (tempStability < 50 && rpmStability < 500000) {
+      positives.push({ 
+        points: 20, 
+        reason: "Mesin cukup stabil - Variasi suhu & RPM dalam batas normal",
+        category: "Stabilitas Mesin (Bonus)"
+      });
+    } else {
+      // Deduct stability penalty
+      score -= 10;
+      deductions.push({ points: 10, reason: "Ketidakstabilan Mesin" });
+      issues.push({
+        severity: "info",
+        message: `🔵 INFO: Fluktuasi parameter terdeteksi (suhu variance: ${tempStability.toFixed(1)}, RPM variance: ${rpmStability.toFixed(0)}) - Mesin kurang stabil, bisa karena kondisi jalan/beban berubah-ubah. [-10 poin stabilitas, tersisa +10 poin bonus]`,
+        icon: Activity,
+      });
+      positives.push({ points: 10, reason: "Mesin tetap beroperasi meski ada fluktuasi" });
     }
 
     score = Math.max(0, Math.min(100, score));
@@ -137,39 +237,51 @@ function AnalyticsPage({ theme, onToggleTheme }) {
     let rating = "Excellent";
     let color = "text-green-500";
     let explanation = "";
-    
+
     if (score >= 90) {
       rating = "Excellent";
       color = "text-green-500";
-      explanation = "Mesin dalam kondisi sangat baik! Semua parameter optimal.";
+      explanation = "Mesin dalam kondisi sangat baik! Semua parameter optimal, perawatan rutin terjaga.";
     } else if (score >= 75) {
       rating = "Good";
       color = "text-blue-500";
-      explanation = "Kondisi mesin baik, ada beberapa area yang perlu perhatian.";
+      explanation = "Kondisi mesin baik, ada beberapa area yang perlu perhatian minor.";
     } else if (score >= 60) {
       rating = "Fair";
       color = "text-yellow-500";
-      explanation = "Kondisi mesin cukup, perlu perawatan segera.";
+      explanation = "Kondisi mesin cukup, perlu perawatan segera untuk mencegah kerusakan.";
     } else if (score >= 40) {
       rating = "Poor";
       color = "text-orange-500";
-      explanation = "Kondisi mesin buruk, segera lakukan servis!";
+      explanation = "Kondisi mesin buruk, segera lakukan servis comprehensive!";
     } else {
       rating = "Critical";
       color = "text-red-500";
-      explanation = "Kondisi mesin kritis! Hentikan penggunaan dan servis sekarang!";
+      explanation = "Kondisi mesin kritis! Hentikan penggunaan dan servis sekarang juga!";
     }
 
-    // Calculate total deductions
+    // Calculate total deductions and positives
     const totalDeducted = deductions.reduce((sum, d) => sum + d.points, 0);
+    const totalPositive = positives.reduce((sum, p) => sum + p.points, 0);
+    const maxPossible = 100; // Base score
+    
+    // Generate detailed breakdown
+    const breakdown = `Skor dihitung dari ${maxPossible} poin maksimal. ${
+      totalDeducted > 0 ? `Dikurangi ${totalDeducted} poin karena masalah yang terdeteksi.` : 'Tidak ada pengurangan poin.'
+    } ${
+      positives.length > 0 ? `Aspek positif: ${totalPositive} poin dari ${positives.length} kategori optimal.` : ''
+    }`;
 
     return {
       score: Math.round(score),
       rating,
       color,
       explanation,
+      breakdown,
       totalDeducted,
+      totalPositive,
       deductions,
+      positives,
       issues,
       metrics: {
         avgTemp: avgTemp.toFixed(1),
@@ -343,14 +455,26 @@ function AnalyticsPage({ theme, onToggleTheme }) {
                 <div className={cn("text-6xl font-bold mb-2", healthScore.color)}>{healthScore.score}</div>
                 <div className="text-sm text-[var(--text-muted)] mb-1">dari 100 poin</div>
                 <div className={cn("text-lg font-semibold mb-3", healthScore.color)}>{healthScore.rating}</div>
-                <p className="text-xs text-center text-[var(--text-muted)]">{healthScore.explanation}</p>
-                {healthScore.totalDeducted > 0 && (
-                  <div className="mt-3 pt-3 border-t border-[var(--border-color)] w-full">
-                    <p className="text-xs text-center text-[var(--text-muted)]">
-                      Total pengurangan: <span className="text-red-500 font-semibold">-{healthScore.totalDeducted} poin</span>
-                    </p>
-                  </div>
-                )}
+                <p className="text-xs text-center text-[var(--text-muted)] mb-3">{healthScore.explanation}</p>
+                <div className="w-full space-y-2">
+                  {healthScore.totalPositive > 0 && (
+                    <div className="p-2 rounded bg-green-500/10 border border-green-500/20">
+                      <p className="text-xs text-center text-green-600 dark:text-green-400">
+                        ✅ Poin Positif: <span className="font-semibold">+{healthScore.totalPositive}</span> dari {healthScore.positives?.length || 0} aspek baik
+                      </p>
+                    </div>
+                  )}
+                  {healthScore.totalDeducted > 0 && (
+                    <div className="p-2 rounded bg-red-500/10 border border-red-500/20">
+                      <p className="text-xs text-center text-red-600 dark:text-red-400">
+                        ⚠️ Pengurangan: <span className="font-semibold">-{healthScore.totalDeducted}</span> dari {healthScore.deductions?.length || 0} masalah
+                      </p>
+                    </div>
+                  )}
+                  <p className="text-xs text-center text-[var(--text-muted)] italic pt-2 border-t border-[var(--border-color)]">
+                    {healthScore.breakdown}
+                  </p>
+                </div>
               </div>
 
               {/* Metrics */}
@@ -377,22 +501,50 @@ function AnalyticsPage({ theme, onToggleTheme }) {
                 </div>
               </div>
 
-              {/* Issues */}
-              <div className="p-4 rounded-lg border border-[var(--border-color)] bg-[var(--bg-card)]">
-                <h3 className="font-semibold text-[var(--text-primary)] mb-3">Temuan</h3>
-                {healthScore.issues.length === 0 ? (
-                  <p className="text-sm text-green-500">✓ Semua sistem normal</p>
-                ) : (
-                  <div className="space-y-2">
-                    {healthScore.issues.map((issue, index) => {
-                      const Icon = issue.icon;
-                      return (
-                        <div key={index} className="flex items-start gap-2">
-                          <Icon className={cn("h-4 w-4 mt-0.5", issue.severity === "critical" ? "text-red-500" : issue.severity === "warning" ? "text-yellow-500" : "text-blue-500")} />
-                          <span className="text-sm text-[var(--text-muted)]">{issue.message}</span>
+              {/* Issues & Positives */}
+              <div className="p-4 rounded-lg border border-[var(--border-color)] bg-[var(--bg-card)] max-h-96 overflow-y-auto">
+                <h3 className="font-semibold text-[var(--text-primary)] mb-3">Detail Penilaian</h3>
+                
+                {/* Positive Aspects */}
+                {healthScore.positives && healthScore.positives.length > 0 && (
+                  <div className="mb-4">
+                    <h4 className="text-xs font-semibold text-green-600 dark:text-green-400 mb-2">✅ ASPEK POSITIF ({healthScore.totalPositive} poin)</h4>
+                    <div className="space-y-1.5">
+                      {healthScore.positives.map((positive, index) => (
+                        <div key={index} className="flex items-start gap-2 p-2 rounded bg-green-500/5 border border-green-500/10">
+                          <span className="text-green-500 text-xs mt-0.5">+{positive.points}</span>
+                          <div className="flex-1">
+                            {positive.category && (
+                              <p className="text-xs font-semibold text-green-600 dark:text-green-400">{positive.category}</p>
+                            )}
+                            <p className="text-xs text-[var(--text-muted)]">{positive.reason}</p>
+                          </div>
                         </div>
-                      );
-                    })}
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Issues/Problems */}
+                {healthScore.issues.length === 0 ? (
+                  <div className="text-center py-4">
+                    <p className="text-sm text-green-500 font-semibold">✓ Tidak ada masalah terdeteksi!</p>
+                    <p className="text-xs text-[var(--text-muted)] mt-1">Semua sistem dalam kondisi optimal</p>
+                  </div>
+                ) : (
+                  <div>
+                    <h4 className="text-xs font-semibold text-red-600 dark:text-red-400 mb-2">⚠️ MASALAH TERDETEKSI (-{healthScore.totalDeducted} poin)</h4>
+                    <div className="space-y-2">
+                      {healthScore.issues.map((issue, index) => {
+                        const Icon = issue.icon;
+                        return (
+                          <div key={index} className="flex items-start gap-2 p-2 rounded bg-red-500/5 border border-red-500/10">
+                            <Icon className={cn("h-4 w-4 mt-0.5 flex-shrink-0", issue.severity === "critical" ? "text-red-500" : issue.severity === "warning" ? "text-yellow-500" : "text-blue-500")} />
+                            <span className="text-xs text-[var(--text-muted)] leading-relaxed">{issue.message}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
                 )}
               </div>
