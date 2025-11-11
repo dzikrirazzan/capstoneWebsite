@@ -475,15 +475,7 @@ function App() {
             />
           }
         />
-        <Route
-          path="/analytics"
-          element={
-            <AnalyticsPage
-              theme={theme}
-              onToggleTheme={toggleTheme}
-            />
-          }
-        />
+        <Route path="/analytics" element={<AnalyticsPage theme={theme} onToggleTheme={toggleTheme} />} />
       </Routes>
     </div>
   );
