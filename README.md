@@ -1,18 +1,10 @@
 # 🚗⚡ FuelSense - Engine Monitoring System<<<<<<< HEAD
 
-
-
 Modern real-time vehicle engine monitoring web application with **React** frontend, **Express.js** backend, and **PostgreSQL** database (Supabase).# capstoneWebsite
-
-
 
 ---=======
 
-
-
 ## 🌟 Features# 🚗⚡ EMSys - Engine Monitoring System
-
-
 
 - ✅ **Real-time Monitoring**: Live RPM, Torque, MAF, Temperature, Fuel ConsumptionModern real-time vehicle engine monitoring web application built with Express.js, React, and MySQL.
 
@@ -62,8 +54,6 @@ EMSys (Engine Monitoring System) is a near real-time monitoring system for vehic
 
 - **React Router** - Navigation```
 
-
-
 ### Deployment## ✨ Features
 
 - **Vercel** - Frontend + Backend (Serverless)
@@ -82,7 +72,7 @@ EMSys (Engine Monitoring System) is a near real-time monitoring system for vehic
 
 ### 1. Clone Repository- ✅ **REST API**: Query historical data and statistics
 
-```bash- ✅ **Modern UI**: Dark theme with TailwindCSS
+````bash- ✅ **Modern UI**: Dark theme with TailwindCSS
 
 git clone https://github.com/dzikrirazzan/capstoneWebsite.git- ✅ **No Authentication**: Single vehicle monitoring (as specified)
 
@@ -128,17 +118,17 @@ cp backend/.env.example backend/.env- **TailwindCSS components** - Data visualiz
 
 # DIRECT_URL=postgresql://...
 
-```
+````
 
 # Run migrationcapstoneWebsite/
 
 cd backend├── backend/
 
-npx prisma migrate dev│   ├── src/
+npx prisma migrate dev│ ├── src/
 
-npm run seed  # Optional: Generate sample data│   │   ├── app.js                 # Factory untuk instance Express (serverless & dev)
+npm run seed # Optional: Generate sample data│ │ ├── app.js # Factory untuk instance Express (serverless & dev)
 
-```│   │   ├── server.js              # HTTP server untuk development lokal
+`````│ │   ├── server.js              # HTTP server untuk development lokal
 
 │   │   ├── db/
 
@@ -310,13 +300,11 @@ CREATE DATABASE fuelsense_db;
 
 - `DELETE /api/sensors/purge` - Delete old recordsEXIT;
 
-```
+`````
 
 ### Health
 
 - `GET /api/health` - API health check### 2. Configure Backend
-
-
 
 ---```bash
 
@@ -324,7 +312,7 @@ cd backend
 
 ## 📊 Database Schemacp .env.example .env
 
-```
+```````
 
 ```prisma
 
@@ -376,7 +364,7 @@ npm run seed
 
 This creates 480 records spanning 7 days with realistic sensor patterns.npm run dev
 
-```
+```````
 
 ---
 
@@ -388,7 +376,7 @@ This will start:
 
 ### Backend (.env)- Frontend on `http://localhost:5173`
 
-```bash
+````bash
 
 DATABASE_URL="postgresql://..."      # Supabase connection string### Option 2: Run Separately
 
@@ -446,7 +434,7 @@ npm run dev
 
 - **Data Comparison**: Compare different time periodsGET /api/health
 
-```
+````
 
 ### 3. Sensor History
 
@@ -470,15 +458,15 @@ npm run dev
 
 ### Root
 
-```bash```json
+`bash`json
 
-npm run dev                  # Run both backend & frontend{
+npm run dev # Run both backend & frontend{
 
-npm run build:frontend       # Build frontend only  "data": [...],
+npm run build:frontend # Build frontend only "data": [...],
 
-npm run build:app-platform   # Build frontend + copy to backend/public  "pagination": {
+npm run build:app-platform # Build frontend + copy to backend/public "pagination": {
 
-```    "page": 1,
+````"page": 1,
 
     "limit": 50,
 
@@ -496,9 +484,9 @@ npx prisma studio            # Database GUI
 
 npx prisma migrate dev       # Run migrations#### Get Latest Sensor Reading
 
-```
+````
 
-```http
+```````http
 
 ### FrontendGET /api/sensor-data/latest
 
@@ -534,7 +522,7 @@ npm run preview              # Preview production build
 
 ## 🤝 Contributing}
 
-```
+```````
 
 This is a capstone project. Feel free to fork and modify for your own use!
 
@@ -566,23 +554,23 @@ MIT
 
 {
 
----  "rpm": { "min": 800, "max": 6000, "avg": 2500 },
+--- "rpm": { "min": 800, "max": 6000, "avg": 2500 },
 
-  "torque": { "min": 50, "max": 350, "avg": 180 },
+"torque": { "min": 50, "max": 350, "avg": 180 },
 
-## 🙏 Acknowledgments  "maf": { "min": 10, "max": 120, "avg": 60 },
+## 🙏 Acknowledgments "maf": { "min": 10, "max": 120, "avg": 60 },
 
-  "temperature": { "min": 85, "max": 105, "avg": 92 },
+"temperature": { "min": 85, "max": 105, "avg": 92 },
 
-- Built with React, Express.js, and Supabase  "fuelConsumption": { "min": 2, "max": 15, "avg": 7 },
+- Built with React, Express.js, and Supabase "fuelConsumption": { "min": 2, "max": 15, "avg": 7 },
 
-- UI components from TailwindCSS  "count": 500,
+- UI components from TailwindCSS "count": 500,
 
-- Charts powered by Recharts  "timeRange": "1h"
+- Charts powered by Recharts "timeRange": "1h"
 
 - Icons by Lucide React}
 
-```
+````
 
 ---
 
@@ -603,7 +591,7 @@ Content-Type: application/json
   "customSensor": 50.0,
   "alertStatus": false
 }
-```
+````
 
 ### Desktop HTTP Endpoints
 

@@ -3,10 +3,6 @@
   "version": "1.0.0",
   "description": "EMSys (Engine Monitoring System) - Real-time Vehicle Engine Monitoring",
   "private": true,
-  "workspaces": [
-    "backend",
-    "frontend"
-  ],
   "engines": {
     "node": "20.x"
   },
