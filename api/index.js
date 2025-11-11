@@ -4,6 +4,9 @@ const prisma = new PrismaClient();
 
 export default async function handler(req, res) {
   const { method, url } = req;
+  
+  // Parse URL properly
+  const path = url.split('?')[0]; // Remove query params
 
   // CORS headers
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -16,7 +19,7 @@ export default async function handler(req, res) {
 
   try {
     // Health check
-    if (url === "/api/health") {
+    if (path === "/api/health") {
       return res.status(200).json({
         status: "ok",
         message: "API is running",
@@ -25,24 +28,15 @@ export default async function handler(req, res) {
     }
 
     // Get latest sensor data
-    if (url === "/api/sensor-data/latest" || url.startsWith("/api/sensor-data/latest")) {
+    if (path === "/api/sensor-data/latest" || path.startsWith("/api/sensor-data/latest")) {
       const latest = await prisma.sensorData.findFirst({
         orderBy: { timestamp: "desc" },
       });
       return res.status(200).json(latest);
     }
 
-    // Get all sensor data (with pagination)
-    if (url === "/api/sensor-data" || url.startsWith("/api/sensor-data?")) {
-      const data = await prisma.sensorData.findMany({
-        orderBy: { timestamp: "desc" },
-        take: 100,
-      });
-      return res.status(200).json(data);
-    }
-
     // Get stats
-    if (url === "/api/sensor-data/stats") {
+    if (path === "/api/sensor-data/stats" || path.startsWith("/api/sensor-data/stats")) {
       const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
       const data = await prisma.sensorData.findMany({
         where: { timestamp: { gte: oneDayAgo } },
@@ -73,7 +67,7 @@ export default async function handler(req, res) {
     }
 
     // Get time series data
-    if (url === "/api/sensor-data/series" || url.startsWith("/api/sensor-data/series")) {
+    if (path === "/api/sensor-data/series" || path.startsWith("/api/sensor-data/series")) {
       const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
       const data = await prisma.sensorData.findMany({
         where: { timestamp: { gte: oneDayAgo } },
@@ -83,8 +77,17 @@ export default async function handler(req, res) {
       return res.status(200).json(data);
     }
 
+    // Get all sensor data with pagination (must be last)
+    if (path === "/api/sensor-data") {
+      const data = await prisma.sensorData.findMany({
+        orderBy: { timestamp: "desc" },
+        take: 100,
+      });
+      return res.status(200).json(data);
+    }
+
     // Not found
-    return res.status(404).json({ error: "Not found" });
+    return res.status(404).json({ error: "Not found", path });
   } catch (error) {
     console.error("API Error:", error);
     return res.status(500).json({
