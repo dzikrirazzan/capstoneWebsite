@@ -32,6 +32,22 @@ export default async function handler(req, res) {
       const latest = await prisma.sensorData.findFirst({
         orderBy: { timestamp: "desc" },
       });
+      
+      // Return empty object if no data
+      if (!latest) {
+        return res.status(200).json({
+          id: 0,
+          timestamp: new Date().toISOString(),
+          rpm: 0,
+          torque: 0,
+          maf: 0,
+          temperature: 0,
+          fuelConsumption: 0,
+          customSensor: null,
+          alertStatus: false
+        });
+      }
+      
       return res.status(200).json(latest);
     }
 
@@ -79,11 +95,30 @@ export default async function handler(req, res) {
 
     // Get all sensor data with pagination (must be last)
     if (path === "/api/sensor-data") {
-      const data = await prisma.sensorData.findMany({
-        orderBy: { timestamp: "desc" },
-        take: 100,
+      // Parse query params for pagination
+      const urlObj = new URL(req.url, `http://${req.headers.host}`);
+      const page = parseInt(urlObj.searchParams.get('page') || '1', 10);
+      const limit = parseInt(urlObj.searchParams.get('limit') || '100', 10);
+      const skip = (page - 1) * limit;
+      
+      const [data, total] = await Promise.all([
+        prisma.sensorData.findMany({
+          orderBy: { timestamp: "desc" },
+          take: limit,
+          skip: skip,
+        }),
+        prisma.sensorData.count()
+      ]);
+      
+      return res.status(200).json({
+        data: data,
+        pagination: {
+          page: page,
+          limit: limit,
+          total: total,
+          totalPages: Math.ceil(total / limit)
+        }
       });
-      return res.status(200).json(data);
     }
 
     // Not found
