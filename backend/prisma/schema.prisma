@@ -6,20 +6,21 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model SensorData {
-  id               Int      @id @default(autoincrement())
-  timestamp        DateTime @default(now())
-  rpm              Float
-  torque           Float
-  maf              Float    // Mass Air Flow
-  temperature      Float
-  fuelConsumption  Float
-  customSensor     Float?   // Optional custom sensor
-  alertStatus      Boolean  @default(false)
+  id              Int      @id @default(autoincrement())
+  timestamp       DateTime @default(now())
+  rpm             Float
+  torque          Float
+  maf             Float    // Mass Air Flow
+  temperature     Float
+  fuelConsumption Float    @map("fuel_consumption")
+  customSensor    Float?   @map("custom_sensor") // Optional custom sensor
+  alertStatus     Boolean  @default(false) @map("alert_status")
   
   @@index([timestamp])
   @@map("sensor_data")
