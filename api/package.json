@@ -2,7 +2,13 @@
   "name": "api",
   "version": "1.0.0",
   "type": "module",
+  "scripts": {
+    "postinstall": "prisma generate"
+  },
   "dependencies": {
     "@prisma/client": "^5.20.0"
+  },
+  "devDependencies": {
+    "prisma": "^5.20.0"
   }
 }
