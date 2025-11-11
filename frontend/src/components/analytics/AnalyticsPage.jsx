@@ -33,88 +33,143 @@ function AnalyticsPage({ theme, onToggleTheme }) {
 
     let score = 100;
     let issues = [];
+    let deductions = []; // Track all deductions for explanation
 
-    // Temperature analysis (30 points)
+    // Temperature analysis (20 points max)
     const avgTemp = data.reduce((sum, d) => sum + d.temperature, 0) / data.length;
     const maxTemp = Math.max(...data.map((d) => d.temperature));
     const minTemp = Math.min(...data.map((d) => d.temperature));
 
     if (maxTemp > HEALTH_THRESHOLDS.temperature.critical) {
       score -= 20;
-      issues.push({ severity: "critical", message: "Suhu kritikal terdeteksi (>110°C)", icon: Thermometer });
+      deductions.push({ points: 20, reason: "Suhu Mesin" });
+      issues.push({ 
+        severity: "critical", 
+        message: `Suhu kritikal ${maxTemp.toFixed(1)}°C (>110°C) - Risiko overheat, perlu pendinginan segera! [-20 poin]`, 
+        icon: Thermometer 
+      });
     } else if (maxTemp > HEALTH_THRESHOLDS.temperature.warning) {
       score -= 10;
-      issues.push({ severity: "warning", message: "Suhu sering tinggi (>100°C)", icon: Thermometer });
+      deductions.push({ points: 10, reason: "Suhu Mesin" });
+      issues.push({ 
+        severity: "warning", 
+        message: `Suhu tinggi ${maxTemp.toFixed(1)}°C (>100°C) - Periksa sistem pendingin dan radiator [-10 poin]`, 
+        icon: Thermometer 
+      });
     }
 
-    // RPM analysis (25 points)
+    // RPM analysis (15 points max)
     const avgRpm = data.reduce((sum, d) => sum + d.rpm, 0) / data.length;
     const maxRpm = Math.max(...data.map((d) => d.rpm));
     const overRevCount = data.filter((d) => d.rpm > HEALTH_THRESHOLDS.rpm.warning).length;
+    const overRevPercentage = (overRevCount / data.length * 100).toFixed(1);
 
     if (maxRpm > HEALTH_THRESHOLDS.rpm.critical) {
       score -= 15;
-      issues.push({ severity: "critical", message: "Over-revving kritikal (>6000 RPM)", icon: Gauge });
+      deductions.push({ points: 15, reason: "RPM Ekstrem" });
+      issues.push({ 
+        severity: "critical", 
+        message: `Over-revving ekstrem ${maxRpm} RPM (>6000) - Risiko kerusakan mesin! [-15 poin]`, 
+        icon: Gauge 
+      });
     } else if (overRevCount > data.length * 0.2) {
       score -= 10;
-      issues.push({ severity: "warning", message: "Sering over-revving (>5000 RPM)", icon: Gauge });
+      deductions.push({ points: 10, reason: "RPM Tinggi" });
+      issues.push({ 
+        severity: "warning", 
+        message: `RPM sering >5000 (${overRevPercentage}% waktu, max: ${maxRpm}) - Kurangi akselerasi agresif [-10 poin]`, 
+        icon: Gauge 
+      });
     }
 
-    // Torque analysis (20 points)
+    // Torque analysis (20 points max)
     const avgTorque = data.reduce((sum, d) => sum + d.torque, 0) / data.length;
     const maxTorque = Math.max(...data.map((d) => d.torque));
-    
+
     if (maxTorque > HEALTH_THRESHOLDS.torque.high) {
       score -= 5;
-      issues.push({ severity: "info", message: "Torsi tinggi terdeteksi (>300 Nm)", icon: Activity });
+      deductions.push({ points: 5, reason: "Torsi Tinggi" });
+      issues.push({ 
+        severity: "info", 
+        message: `Torsi tinggi ${maxTorque.toFixed(1)} Nm (>300) - Beban kerja berat, perhatikan transmisi [-5 poin]`, 
+        icon: Activity 
+      });
     }
     if (avgTorque < HEALTH_THRESHOLDS.torque.low) {
       score -= 10;
-      issues.push({ severity: "warning", message: "Performa torsi rendah (<100 Nm)", icon: Activity });
+      deductions.push({ points: 10, reason: "Performa Torsi" });
+      issues.push({ 
+        severity: "warning", 
+        message: `Torsi rendah ${avgTorque.toFixed(1)} Nm (<100) - Performa lemah, periksa busi & filter udara [-10 poin]`, 
+        icon: Activity 
+      });
     }
 
-    // MAF analysis (15 points)
+    // MAF analysis (15 points max)
     const avgMaf = data.reduce((sum, d) => sum + d.maf, 0) / data.length;
     const mafVariance = data.reduce((sum, d) => sum + Math.pow(d.maf - avgMaf, 2), 0) / data.length;
-    
+
     if (mafVariance > 500) {
       score -= 10;
-      issues.push({ severity: "warning", message: "Aliran udara tidak stabil", icon: Wind });
+      deductions.push({ points: 10, reason: "Aliran Udara" });
+      issues.push({ 
+        severity: "warning", 
+        message: `Aliran udara tidak stabil (variance: ${mafVariance.toFixed(0)}) - Bersihkan/ganti MAF sensor [-10 poin]`, 
+        icon: Wind 
+      });
     }
 
-    // Fuel consumption analysis (10 points)
+    // Fuel consumption analysis (10 points max)
     const avgFuel = data.reduce((sum, d) => sum + d.fuelConsumption, 0) / data.length;
 
     if (avgFuel > HEALTH_THRESHOLDS.fuelConsumption.warning) {
       score -= 10;
-      issues.push({ severity: "warning", message: "Konsumsi BBM sangat tinggi (>15 L/h)", icon: Droplet });
+      deductions.push({ points: 10, reason: "Konsumsi BBM" });
+      issues.push({ 
+        severity: "warning", 
+        message: `Konsumsi BBM boros ${avgFuel.toFixed(2)} L/h (>15) - Periksa injektor & gaya berkendara [-10 poin]`, 
+        icon: Droplet 
+      });
     }
 
     score = Math.max(0, Math.min(100, score));
 
     let rating = "Excellent";
     let color = "text-green-500";
-    if (score < 90) {
+    let explanation = "";
+    
+    if (score >= 90) {
+      rating = "Excellent";
+      color = "text-green-500";
+      explanation = "Mesin dalam kondisi sangat baik! Semua parameter optimal.";
+    } else if (score >= 75) {
       rating = "Good";
       color = "text-blue-500";
-    }
-    if (score < 75) {
+      explanation = "Kondisi mesin baik, ada beberapa area yang perlu perhatian.";
+    } else if (score >= 60) {
       rating = "Fair";
       color = "text-yellow-500";
-    }
-    if (score < 60) {
+      explanation = "Kondisi mesin cukup, perlu perawatan segera.";
+    } else if (score >= 40) {
       rating = "Poor";
       color = "text-orange-500";
-    }
-    if (score < 40) {
+      explanation = "Kondisi mesin buruk, segera lakukan servis!";
+    } else {
       rating = "Critical";
       color = "text-red-500";
+      explanation = "Kondisi mesin kritis! Hentikan penggunaan dan servis sekarang!";
     }
+
+    // Calculate total deductions
+    const totalDeducted = deductions.reduce((sum, d) => sum + d.points, 0);
 
     return {
       score: Math.round(score),
       rating,
       color,
+      explanation,
+      totalDeducted,
+      deductions,
       issues,
       metrics: {
         avgTemp: avgTemp.toFixed(1),
@@ -129,7 +184,7 @@ function AnalyticsPage({ theme, onToggleTheme }) {
     };
   }, []);
 
-  const calculateFuelMetrics = useCallback((data, fuelPrice = 15000) => {
+  const calculateFuelMetrics = useCallback((data, fuelPrice = 12200) => {
     if (!data || data.length === 0) return null;
 
     const totalFuel = data.reduce((sum, d) => sum + d.fuelConsumption, 0);
@@ -286,8 +341,16 @@ function AnalyticsPage({ theme, onToggleTheme }) {
               {/* Score Display */}
               <div className="flex flex-col items-center justify-center p-6 rounded-lg border border-[var(--border-color)] bg-[var(--bg-card)]">
                 <div className={cn("text-6xl font-bold mb-2", healthScore.color)}>{healthScore.score}</div>
-                <div className="text-sm text-[var(--text-muted)] mb-1">out of 100</div>
-                <div className={cn("text-lg font-semibold", healthScore.color)}>{healthScore.rating}</div>
+                <div className="text-sm text-[var(--text-muted)] mb-1">dari 100 poin</div>
+                <div className={cn("text-lg font-semibold mb-3", healthScore.color)}>{healthScore.rating}</div>
+                <p className="text-xs text-center text-[var(--text-muted)]">{healthScore.explanation}</p>
+                {healthScore.totalDeducted > 0 && (
+                  <div className="mt-3 pt-3 border-t border-[var(--border-color)] w-full">
+                    <p className="text-xs text-center text-[var(--text-muted)]">
+                      Total pengurangan: <span className="text-red-500 font-semibold">-{healthScore.totalDeducted} poin</span>
+                    </p>
+                  </div>
+                )}
               </div>
 
               {/* Metrics */}
@@ -346,7 +409,7 @@ function AnalyticsPage({ theme, onToggleTheme }) {
               </div>
               <div>
                 <h2 className="text-xl font-bold text-[var(--text-primary)]">Efisiensi Bahan Bakar</h2>
-                <p className="text-sm text-[var(--text-muted)]">Analisis konsumsi dan biaya operasional (Harga BBM: Rp 15,000/L)</p>
+                <p className="text-sm text-[var(--text-muted)]">Analisis konsumsi dan biaya operasional (Pertamax RON 92 - Rp 12.200/L)</p>
               </div>
             </div>
 
@@ -411,9 +474,7 @@ function AnalyticsPage({ theme, onToggleTheme }) {
                   disabled={loading}
                   className={cn(
                     "rounded-lg px-4 py-2 text-sm transition",
-                    preset.value === comparisonMode
-                      ? "bg-[var(--accent)] text-white"
-                      : "border border-[var(--border-color)] bg-[var(--bg-card)] text-[var(--text-muted)] hover:border-[var(--accent)]/60"
+                    preset.value === comparisonMode ? "bg-[var(--accent)] text-white" : "border border-[var(--border-color)] bg-[var(--bg-card)] text-[var(--text-muted)] hover:border-[var(--accent)]/60"
                   )}
                 >
                   {preset.label}
@@ -498,34 +559,19 @@ function AnalyticsPage({ theme, onToggleTheme }) {
                 const Icon = metric.icon;
 
                 return (
-                  <div
-                    key={metric.key}
-                    className="p-4 rounded-lg border border-[var(--border-color)] bg-[var(--bg-card)]"
-                  >
+                  <div key={metric.key} className="p-4 rounded-lg border border-[var(--border-color)] bg-[var(--bg-card)]">
                     <div className="flex items-center gap-2 mb-3">
                       <Icon className="h-4 w-4 text-[var(--text-muted)]" />
                       <p className="text-sm text-[var(--text-muted)]">{metric.label}</p>
                     </div>
 
                     <p className="text-3xl font-bold text-[var(--text-secondary)] mb-2">
-                      {comparison.value}{" "}
-                      <span className="text-sm font-normal text-[var(--text-muted)]">{metric.unit}</span>
+                      {comparison.value} <span className="text-sm font-normal text-[var(--text-muted)]">{metric.unit}</span>
                     </p>
 
                     {comparison.change !== 0 && (
-                      <div
-                        className={cn(
-                          "flex items-center gap-1 text-sm",
-                          comparison.trend === "up"
-                            ? "text-red-500"
-                            : comparison.trend === "down"
-                            ? "text-green-500"
-                            : "text-[var(--text-muted)]"
-                        )}
-                      >
-                        <TrendingUp
-                          className={cn("h-4 w-4", comparison.trend === "down" && "rotate-180")}
-                        />
+                      <div className={cn("flex items-center gap-1 text-sm", comparison.trend === "up" ? "text-red-500" : comparison.trend === "down" ? "text-green-500" : "text-[var(--text-muted)]")}>
+                        <TrendingUp className={cn("h-4 w-4", comparison.trend === "down" && "rotate-180")} />
                         <span>{Math.abs(parseFloat(comparison.change))}% vs periode sebelumnya</span>
                       </div>
                     )}
