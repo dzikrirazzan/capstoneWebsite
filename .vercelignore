@@ -1,0 +1,11 @@
+node_modules
+.git
+.github
+*.log
+.env
+.env.local
+backend/node_modules
+frontend/node_modules
+backend/prisma/migrations
+*.md
+!README.md
