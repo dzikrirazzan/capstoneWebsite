@@ -12,7 +12,6 @@ export default function HistoryTable({ data }) {
             <th className="px-4 py-3">MAF</th>
             <th className="px-4 py-3">Temperature</th>
             <th className="px-4 py-3">Fuel</th>
-            <th className="px-4 py-3">Custom</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-[var(--border-color)] text-sm text-[var(--text-secondary)]">
@@ -24,7 +23,6 @@ export default function HistoryTable({ data }) {
               <td className="px-4 py-3">{formatNumber(row.maf, 1)} g/s</td>
               <td className="px-4 py-3">{formatNumber(row.temperature, 1)} °C</td>
               <td className="px-4 py-3">{formatNumber(row.fuelConsumption, 2)} L/h</td>
-              <td className="px-4 py-3">{row.customSensor !== null && row.customSensor !== undefined ? formatNumber(row.customSensor, 1) : "-"}</td>
             </tr>
           ))}
         </tbody>
