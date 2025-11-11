@@ -471,9 +471,6 @@ function AnalyticsPage({ theme, onToggleTheme }) {
                       </p>
                     </div>
                   )}
-                  <p className="text-xs text-center text-[var(--text-muted)] italic pt-2 border-t border-[var(--border-color)]">
-                    {healthScore.breakdown}
-                  </p>
                 </div>
               </div>
 
