@@ -62,10 +62,7 @@ const AGGREGATE_METRICS = [
 
 export default function StatsPanel({ sensorData, stats, statsError, statsRange, onRangeChange, isLoading }) {
   const lastUpdate = sensorData ? formatDate(sensorData.timestamp) : "Belum ada data";
-  const periodLabel =
-    stats?.period && (stats.period.start || stats.period.end)
-      ? `${stats.period.start ? formatDate(stats.period.start) : "—"} → ${stats.period.end ? formatDate(stats.period.end) : "—"}`
-      : null;
+  const periodLabel = stats?.period && (stats.period.start || stats.period.end) ? `${stats.period.start ? formatDate(stats.period.start) : "—"} → ${stats.period.end ? formatDate(stats.period.end) : "—"}` : null;
 
   const currentMetrics = useMemo(
     () => [
@@ -106,9 +103,7 @@ export default function StatsPanel({ sensorData, stats, statsError, statsRange, 
               disabled={isLoading && option.value === statsRange}
               className={cn(
                 "rounded-lg px-4 py-2 text-sm transition",
-                option.value === statsRange
-                  ? "bg-[var(--accent)] text-white shadow-lg shadow-[var(--accent)]/30"
-                  : "border border-[var(--border-color)] bg-[var(--bg-card)] text-[var(--text-muted)] hover:border-[var(--accent)]/60",
+                option.value === statsRange ? "bg-[var(--accent)] text-white shadow-lg shadow-[var(--accent)]/30" : "border border-[var(--border-color)] bg-[var(--bg-card)] text-[var(--text-muted)] hover:border-[var(--accent)]/60",
                 isLoading && option.value === statsRange ? "opacity-80" : ""
               )}
             >
@@ -122,10 +117,7 @@ export default function StatsPanel({ sensorData, stats, statsError, statsRange, 
         {currentMetrics.map((stat) => {
           const Icon = stat.icon;
           return (
-            <div
-              key={stat.label}
-              className="flex items-center gap-3 rounded-lg border border-[var(--border-color)] bg-[var(--bg-card)] p-4"
-            >
+            <div key={stat.label} className="flex items-center gap-3 rounded-lg border border-[var(--border-color)] bg-[var(--bg-card)] p-4">
               <Icon className={cn("h-8 w-8", stat.colorClass)} />
               <div>
                 <p className="text-sm text-[var(--text-muted)]">{stat.label}</p>
@@ -152,21 +144,14 @@ export default function StatsPanel({ sensorData, stats, statsError, statsRange, 
           )}
         </div>
 
-        {statsError && (
-          <div className="rounded-lg border border-red-500/40 bg-[rgba(239,68,68,0.12)] px-4 py-3 text-sm text-[#fca5a5]">
-            {statsError}
-          </div>
-        )}
+        {statsError && <div className="rounded-lg border border-red-500/40 bg-[rgba(239,68,68,0.12)] px-4 py-3 text-sm text-[#fca5a5]">{statsError}</div>}
 
         {isLoading ? (
           <p className="text-sm text-[var(--text-muted)]">Mengambil data statistik...</p>
         ) : stats && stats.count > 0 ? (
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
             {AGGREGATE_METRICS.map((metric) => (
-              <div
-                key={metric.key}
-                className="rounded-lg border border-[var(--border-color)] bg-[var(--bg-card)] p-4"
-              >
+              <div key={metric.key} className="rounded-lg border border-[var(--border-color)] bg-[var(--bg-card)] p-4">
                 <p className="text-sm text-[var(--text-muted)]">{metric.label}</p>
                 <div className="mt-3 grid grid-cols-3 gap-3 text-center text-xs text-[var(--text-muted)]">
                   <div>
@@ -192,9 +177,7 @@ export default function StatsPanel({ sensorData, stats, statsError, statsRange, 
             ))}
           </div>
         ) : (
-          <div className="rounded-lg border border-[var(--border-color)] bg-[var(--bg-card)] px-4 py-6 text-center text-sm text-[var(--text-muted)]">
-            Belum ada data pada rentang waktu ini.
-          </div>
+          <div className="rounded-lg border border-[var(--border-color)] bg-[var(--bg-card)] px-4 py-6 text-center text-sm text-[var(--text-muted)]">Belum ada data pada rentang waktu ini.</div>
         )}
       </div>
     </div>

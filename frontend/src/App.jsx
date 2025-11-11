@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Routes, Route } from "react-router-dom";
 import Dashboard from "./components/Dashboard";
 import HistoryPage from "./components/history/HistoryPage";
+import AnalyticsPage from "./components/analytics/AnalyticsPage";
 
 const METRICS = ["rpm", "torque", "maf", "temperature", "fuelConsumption"];
 
@@ -471,6 +472,15 @@ function App() {
               onResetHistory={handleResetHistoryData}
               isExportingHistory={isExportingHistory}
               isResettingHistory={isResettingHistory}
+            />
+          }
+        />
+        <Route
+          path="/analytics"
+          element={
+            <AnalyticsPage
+              theme={theme}
+              onToggleTheme={toggleTheme}
             />
           }
         />
