@@ -1,8 +1,9 @@
 {
   "version": 2,
-  "buildCommand": "npm run build --workspace=frontend",
+  "buildCommand": "cd frontend && npm install && npm run build && cd ..",
+  "installCommand": "npm install -g npm@latest && npm install",
   "outputDirectory": "frontend/dist",
-  "framework": "vite",
+  "framework": null,
   "functions": {
     "api/*.js": {
       "runtime": "nodejs20.x",
