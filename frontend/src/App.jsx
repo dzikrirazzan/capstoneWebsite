@@ -186,20 +186,20 @@ function App() {
         } else if (statsRange !== "all") {
           // Calculate date range based on statsRange
           const now = new Date();
-          let startDate = new Date();
+          let startDate;
 
           switch (statsRange) {
             case "1h":
-              startDate.setHours(now.getHours() - 1);
+              startDate = new Date(now.getTime() - 60 * 60 * 1000);
               break;
             case "24h":
-              startDate.setHours(now.getHours() - 24);
+              startDate = new Date(now.getTime() - 24 * 60 * 60 * 1000);
               break;
             case "7d":
-              startDate.setDate(now.getDate() - 7);
+              startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
               break;
             case "30d":
-              startDate.setDate(now.getDate() - 30);
+              startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
               break;
             default:
               startDate = null;

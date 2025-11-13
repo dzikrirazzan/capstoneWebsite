@@ -379,16 +379,16 @@ function AnalyticsPage({ theme, onToggleTheme }) {
 
         switch (timeRange) {
           case "1h":
-            period1Start.setHours(period1Start.getHours() - 1);
+            period1Start = new Date(period1End.getTime() - 60 * 60 * 1000);
             break;
           case "24h":
-            period1Start.setHours(period1Start.getHours() - 24);
+            period1Start = new Date(period1End.getTime() - 24 * 60 * 60 * 1000);
             break;
           case "7d":
-            period1Start.setDate(period1Start.getDate() - 7);
+            period1Start = new Date(period1End.getTime() - 7 * 24 * 60 * 60 * 1000);
             break;
           case "30d":
-            period1Start.setDate(period1Start.getDate() - 30);
+            period1Start = new Date(period1End.getTime() - 30 * 24 * 60 * 60 * 1000);
             break;
         }
       }

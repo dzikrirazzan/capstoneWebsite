@@ -53,7 +53,11 @@ export default function HistoryFilters({ filters, onChange, onApply, onResetFilt
             <RefreshCw className="h-4 w-4" />
             Refresh
           </button>
-                    <button onClick={onExport} disabled={isExporting} className="flex items-center gap-2 rounded-lg bg-[var(--accent)] px-4 py-2 text-sm font-medium text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50">
+          <button
+            onClick={onExport}
+            disabled={isExporting}
+            className="flex items-center gap-2 rounded-lg bg-[var(--accent)] px-4 py-2 text-sm font-medium text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+          >
             <Download className="h-4 w-4" />
             {isExporting ? "Mengekspor..." : "Ekspor Excel"}
           </button>
