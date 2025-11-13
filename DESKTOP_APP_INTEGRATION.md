@@ -9,6 +9,7 @@ Dokumentasi API untuk integrasi Desktop App (.NET) dengan EMSys Web Server.
 Desktop app perlu mengirim data sensor engine ke web server melalui HTTP POST request. Data akan otomatis tersimpan di database dan ditampilkan real-time di dashboard web.
 
 **Flow:**
+
 ```
 Desktop App (Sensor Reading) → HTTP POST → Web Server API → Database → Dashboard
 ```
@@ -18,16 +19,10 @@ Desktop App (Sensor Reading) → HTTP POST → Web Server API → Database → D
 ## 🌐 API Endpoint
 
 ### Production URL
+
 ```
 https://capstone-website-snowy.vercel.app/api/sensor-data
 ```
-
-### Local Testing (jika ada)
-```
-http://localhost:3001/api/sensor-data
-```
-
----
 
 ## 📝 API Specification
 
@@ -56,21 +51,21 @@ http://localhost:3001/api/sensor-data
 
 ## 📊 Data Schema
 
-| Field | Type | Required | Unit | Description | Contoh |
-|-------|------|----------|------|-------------|--------|
-| `timestamp` | ISO String | ❌ Optional | - | Waktu pembacaan (default: server time) | `"2025-11-13T10:30:45.000Z"` |
-| `rpm` | Number | ✅ **Required** | RPM | Putaran mesin per menit | `3500` |
-| `torque` | Number | ✅ **Required** | Nm | Torsi mesin | `250.5` |
-| `maf` | Number | ✅ **Required** | g/s | Mass Air Flow | `45.2` |
-| `temperature` | Number | ✅ **Required** | °C | Suhu mesin | `85.5` |
-| `fuelConsumption` | Number | ✅ **Required** | L/h | Konsumsi bahan bakar | `10.25` |
-| `customSensor` | Number/null | ❌ Optional | - | Sensor tambahan | `null` atau `123.45` |
-| `alertStatus` | Boolean | ❌ Optional | - | Status alert (auto jika tidak dikirim) | `false` |
+| Field             | Type        | Required        | Unit | Description                            | Contoh                       |
+| ----------------- | ----------- | --------------- | ---- | -------------------------------------- | ---------------------------- |
+| `timestamp`       | ISO String  | ❌ Optional     | -    | Waktu pembacaan (default: server time) | `"2025-11-13T10:30:45.000Z"` |
+| `rpm`             | Number      | ✅ **Required** | RPM  | Putaran mesin per menit                | `3500`                       |
+| `torque`          | Number      | ✅ **Required** | Nm   | Torsi mesin                            | `250.5`                      |
+| `maf`             | Number      | ✅ **Required** | g/s  | Mass Air Flow                          | `45.2`                       |
+| `temperature`     | Number      | ✅ **Required** | °C   | Suhu mesin                             | `85.5`                       |
+| `fuelConsumption` | Number      | ✅ **Required** | L/h  | Konsumsi bahan bakar                   | `10.25`                      |
+| `customSensor`    | Number/null | ❌ Optional     | -    | Sensor tambahan                        | `null` atau `123.45`         |
+| `alertStatus`     | Boolean     | ❌ Optional     | -    | Status alert (auto jika tidak dikirim) | `false`                      |
 
 ### ⚠️ Validation Rules
 
 - **Required**: `rpm`, `torque`, `maf`, `temperature`, `fuelConsumption` wajib ada
-- **Decimal**: Pakai titik (`.`) bukan koma → `85.5` ✅ bukan `85,5` ❌  
+- **Decimal**: Pakai titik (`.`) bukan koma → `85.5` ✅ bukan `85,5` ❌
 - **Timestamp**: Opsional, jika tidak ada server pakai waktu sekarang
 - **Alert Status**: Default `true` jika RPM ≥ 5000
 - **Null**: Hanya `customSensor` yang boleh `null`
@@ -110,10 +105,10 @@ private const string API_URL = "https://capstone-website-snowy.vercel.app/api/se
 
 ```csharp
 public async Task<bool> SendSensorDataAsync(
-    double rpm, 
-    double torque, 
-    double maf, 
-    double temperature, 
+    double rpm,
+    double torque,
+    double maf,
+    double temperature,
     double fuelConsumption)
 {
     try
@@ -132,9 +127,9 @@ public async Task<bool> SendSensorDataAsync(
 
         var json = JsonSerializer.Serialize(data);
         var content = new StringContent(json, Encoding.UTF8, "application/json");
-        
+
         var response = await _httpClient.PostAsync(API_URL, content);
-        
+
         if (response.IsSuccessStatusCode)
         {
             var result = await response.Content.ReadAsStringAsync();
@@ -169,7 +164,7 @@ timer.Elapsed += async (sender, e) =>
     double maf = ReadMafSensor();
     double temperature = ReadTemperatureSensor();
     double fuelConsumption = ReadFuelSensor();
-    
+
     // Kirim ke server
     await SendSensorDataAsync(rpm, torque, maf, temperature, fuelConsumption);
 };
@@ -224,12 +219,14 @@ Jika ada masalah di server:
 ## 🔧 Yang Perlu Diimplementasi
 
 ### 1. HTTP POST Function ✅
-- [ ] Setup `HttpClient` 
+
+- [ ] Setup `HttpClient`
 - [ ] Buat function untuk serialize data ke JSON
 - [ ] Set header `Content-Type: application/json`
 - [ ] Handle HTTP response (cek status code)
 
 ### 2. Data Collection & Formatting ✅
+
 - [ ] Baca data dari sensor engine (RPM, Torque, MAF, Temperature, Fuel)
 - [ ] Convert ke tipe data yang benar (double untuk semua number)
 - [ ] Optional: Format timestamp ke ISO 8601 (`DateTime.UtcNow.ToString("o")`)
@@ -237,6 +234,7 @@ Jika ada masalah di server:
 ### 3. Sending Strategy ✅ (Pilih salah satu)
 
 **Option A - Interval-Based** ⭐ Recommended
+
 ```csharp
 // Kirim data setiap 5-10 detik menggunakan Timer
 System.Timers.Timer timer = new System.Timers.Timer(5000);
@@ -245,6 +243,7 @@ timer.Start();
 ```
 
 **Option B - Event-Based**
+
 ```csharp
 // Kirim hanya saat ada perubahan signifikan
 if (Math.Abs(currentRpm - previousRpm) > 100)
@@ -254,17 +253,20 @@ if (Math.Abs(currentRpm - previousRpm) > 100)
 ```
 
 **Option C - Batch**
+
 ```csharp
 // Kumpulkan data lokal, kirim batch setiap 1 menit
 // Berguna jika desktop app kadang offline
 ```
 
 ### 4. Error Handling ✅
+
 - [ ] Try-catch untuk handle exception
 - [ ] Retry 2-3x jika gagal (dengan delay 2-3 detik)
 - [ ] Log error untuk debugging
 
 ### 5. Optional Enhancements 🌟
+
 - [ ] Simpan data lokal jika internet mati (SQLite/file)
 - [ ] Retry kirim data yang gagal saat koneksi kembali
 - [ ] UI indicator untuk status koneksi (Connected/Error)
@@ -277,7 +279,7 @@ if (Math.Abs(currentRpm - previousRpm) > 100)
 
 1. **Method**: `POST`
 2. **URL**: `https://capstone-website-snowy.vercel.app/api/sensor-data`
-3. **Headers**: 
+3. **Headers**:
    ```
    Content-Type: application/json
    ```
@@ -306,6 +308,7 @@ curl -X POST https://capstone-website-snowy.vercel.app/api/sensor-data \
 Buka: **https://capstone-website-snowy.vercel.app**
 
 Data akan muncul di:
+
 - **Dashboard** → Metrics terbaru + Chart real-time
 - **Analisis** → Health Score calculation
 - **Riwayat Sensor** → Tabel lengkap semua data
@@ -314,19 +317,20 @@ Data akan muncul di:
 
 ## 🔍 Troubleshooting
 
-| Problem | Cause | Solution |
-|---------|-------|----------|
-| **400 Bad Request** | Field required tidak lengkap | Pastikan ada: `rpm`, `torque`, `maf`, `temperature`, `fuelConsumption` |
-| **500 Server Error** | Server/database issue | Retry beberapa kali, hubungi tim web jika persist |
-| **Network Timeout** | Internet lambat/mati | Implement retry atau save data lokal |
-| **Data tidak muncul** | Response bukan 201 | Cek HTTP status code, harus `201 Created` |
-| **Decimal error** | Pakai koma (,) | Ganti ke titik (.) → `85.5` bukan `85,5` |
+| Problem               | Cause                        | Solution                                                               |
+| --------------------- | ---------------------------- | ---------------------------------------------------------------------- |
+| **400 Bad Request**   | Field required tidak lengkap | Pastikan ada: `rpm`, `torque`, `maf`, `temperature`, `fuelConsumption` |
+| **500 Server Error**  | Server/database issue        | Retry beberapa kali, hubungi tim web jika persist                      |
+| **Network Timeout**   | Internet lambat/mati         | Implement retry atau save data lokal                                   |
+| **Data tidak muncul** | Response bukan 201           | Cek HTTP status code, harus `201 Created`                              |
+| **Decimal error**     | Pakai koma (,)               | Ganti ke titik (.) → `85.5` bukan `85,5`                               |
 
 ---
 
 ## 📌 Implementation Checklist
 
 **Minimal (Must Have):**
+
 - [ ] Buat function `SendSensorDataAsync()` dengan HttpClient
 - [ ] Serialize sensor data ke JSON format
 - [ ] POST ke endpoint dengan header `Content-Type: application/json`
@@ -335,6 +339,7 @@ Data akan muncul di:
 - [ ] Basic error handling (try-catch)
 
 **Optional (Nice to Have):**
+
 - [ ] Retry mechanism (3x retry dengan delay)
 - [ ] Error logging untuk debugging
 - [ ] Local storage jika offline
@@ -346,8 +351,9 @@ Data akan muncul di:
 ## 📞 Support
 
 Jika ada pertanyaan:
+
 1. Test dulu dengan Postman/cURL
-2. Cek HTTP response status & error message  
+2. Cek HTTP response status & error message
 3. Verify data format sesuai schema
 4. Hubungi tim web development
 
