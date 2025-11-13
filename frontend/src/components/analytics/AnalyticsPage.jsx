@@ -669,7 +669,7 @@ function AnalyticsPage({ theme, onToggleTheme }) {
 
         {/* Engine Health Score */}
         {healthScore && (
-          <div className="card-container p-6">
+          <div key={`health-${healthScore.score}-${period1Data?.length || 0}`} className="card-container p-6">
             <div className="flex items-center gap-3 mb-6">
               <div className="rounded-lg bg-[var(--accent-soft)] p-2">
                 <Heart className="h-6 w-6 text-[var(--accent)]" />
@@ -764,7 +764,7 @@ function AnalyticsPage({ theme, onToggleTheme }) {
 
         {/* Fuel Efficiency */}
         {fuelMetrics && (
-          <div className="card-container p-6">
+          <div key={`fuel-${fuelMetrics.avgConsumption}-${period1Data?.length || 0}`} className="card-container p-6">
             <div className="flex items-center gap-3 mb-6">
               <div className="rounded-lg bg-green-500/10 p-2">
                 <Droplet className="h-6 w-6 text-green-500" />
