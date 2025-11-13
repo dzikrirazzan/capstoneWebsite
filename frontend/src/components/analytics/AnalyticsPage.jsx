@@ -404,11 +404,18 @@ function AnalyticsPage({ theme, onToggleTheme }) {
       setPeriod1Data(data1.data || []);
       setPeriod2Data(null); // Clear comparison data in time range mode
 
+      console.log(`[Analytics] Fetched ${data1.data?.length || 0} records for range: ${timeRange}`);
+
       // Calculate metrics from fetched data
       if (data1.data && data1.data.length > 0) {
-        setHealthScore(calculateHealthScore(data1.data));
-        setFuelMetrics(calculateFuelMetrics(data1.data));
+        const newHealthScore = calculateHealthScore(data1.data);
+        const newFuelMetrics = calculateFuelMetrics(data1.data);
+        console.log("[Analytics] Updated Health Score:", newHealthScore?.score);
+        console.log("[Analytics] Updated Fuel Metrics:", newFuelMetrics?.avgConsumption);
+        setHealthScore(newHealthScore);
+        setFuelMetrics(newFuelMetrics);
       } else {
+        console.log("[Analytics] No data - clearing metrics");
         setHealthScore(null);
         setFuelMetrics(null);
       }
