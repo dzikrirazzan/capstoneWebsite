@@ -10,6 +10,15 @@ const COMPARISON_PRESETS = [
   { label: "Custom", value: "custom" },
 ];
 
+const TIME_RANGE_OPTIONS = [
+  { label: "1 Jam", value: "1h" },
+  { label: "24 Jam", value: "24h" },
+  { label: "7 Hari", value: "7d" },
+  { label: "30 Hari", value: "30d" },
+  { label: "Semua Data", value: "all" },
+  { label: "Custom", value: "custom" },
+];
+
 const HEALTH_THRESHOLDS = {
   temperature: { ideal: 85, warning: 100, critical: 110 },
   rpm: { idle: 1000, normal: 3500, warning: 5000, critical: 6000 },
@@ -19,6 +28,10 @@ const HEALTH_THRESHOLDS = {
 };
 
 function AnalyticsPage({ theme, onToggleTheme }) {
+  const [timeRange, setTimeRange] = useState("all");
+  const [customStartDate, setCustomStartDate] = useState("");
+  const [customEndDate, setCustomEndDate] = useState("");
+  const [showCustomDatePicker, setShowCustomDatePicker] = useState(false);
   const [comparisonMode, setComparisonMode] = useState("today-yesterday");
   const [customPeriod1, setCustomPeriod1] = useState({ start: "", end: "" });
   const [customPeriod2, setCustomPeriod2] = useState({ start: "", end: "" });
@@ -347,6 +360,72 @@ function AnalyticsPage({ theme, onToggleTheme }) {
     setLoading(true);
     try {
       const now = new Date();
+      let period1Start, period1End;
+
+      // Calculate time range based on selection
+      if (timeRange === "custom" && (customStartDate || customEndDate)) {
+        if (customStartDate) {
+          period1Start = new Date(customStartDate);
+          period1Start.setHours(0, 0, 0, 0);
+        }
+        period1End = new Date();
+        if (customEndDate) {
+          period1End = new Date(customEndDate);
+          period1End.setHours(23, 59, 59, 999);
+        }
+      } else if (timeRange !== "all") {
+        period1End = new Date();
+        period1Start = new Date();
+        
+        switch (timeRange) {
+          case "1h":
+            period1Start.setHours(period1Start.getHours() - 1);
+            break;
+          case "24h":
+            period1Start.setHours(period1Start.getHours() - 24);
+            break;
+          case "7d":
+            period1Start.setDate(period1Start.getDate() - 7);
+            break;
+          case "30d":
+            period1Start.setDate(period1Start.getDate() - 30);
+            break;
+        }
+      }
+
+      // Build fetch URL
+      const params = new URLSearchParams({ limit: "1000" });
+      if (period1Start) params.set("start", period1Start.toISOString());
+      if (period1End && timeRange !== "all") params.set("end", period1End.toISOString());
+
+      // Fetch data
+      const response1 = await fetch(`/api/sensor-data/series?${params.toString()}`);
+      const data1 = await response1.json();
+      setPeriod1Data(data1.data || []);
+      setPeriod2Data(null); // Clear comparison data in time range mode
+
+      // Calculate metrics from fetched data
+      if (data1.data && data1.data.length > 0) {
+        setHealthScore(calculateHealthScore(data1.data));
+        setFuelMetrics(calculateFuelMetrics(data1.data));
+      } else {
+        setHealthScore(null);
+        setFuelMetrics(null);
+      }
+    } catch (error) {
+      console.error("Failed to fetch analytics data:", error);
+      setPeriod1Data([]);
+      setPeriod2Data(null);
+      setHealthScore(null);
+      setFuelMetrics(null);
+    } finally {
+      setLoading(false);
+    }
+  }, [timeRange, customStartDate, customEndDate, calculateHealthScore, calculateFuelMetrics]);
+
+  const fetchOldComparisonData = useCallback(async () => {
+    try {
+      const now = new Date();
       let period1Start, period1End, period2Start, period2End;
 
       if (comparisonMode === "custom") {
@@ -400,14 +479,28 @@ function AnalyticsPage({ theme, onToggleTheme }) {
   }, [comparisonMode, customPeriod1, customPeriod2, calculateHealthScore, calculateFuelMetrics]);
 
   useEffect(() => {
-    if (comparisonMode !== "custom") {
-      fetchComparisonData();
+    fetchComparisonData();
+  }, [fetchComparisonData]);
+
+  const handleTimeRangeChange = (range) => {
+    setTimeRange(range);
+    if (range === "custom") {
+      setShowCustomDatePicker(true);
+    } else {
+      setShowCustomDatePicker(false);
+      setCustomStartDate("");
+      setCustomEndDate("");
     }
-  }, [comparisonMode, fetchComparisonData]);
+  };
+
+  const handleCustomDateApply = () => {
+    setShowCustomDatePicker(false);
+    fetchComparisonData();
+  };
 
   const handleCustomCompare = () => {
     if (customPeriod1.start && customPeriod1.end && customPeriod2.start && customPeriod2.end) {
-      fetchComparisonData();
+      fetchOldComparisonData();
     }
   };
 
@@ -440,6 +533,148 @@ function AnalyticsPage({ theme, onToggleTheme }) {
         <div>
           <h1 className="text-2xl font-bold text-[var(--text-primary)]">Analisis Performa</h1>
           <p className="text-sm text-[var(--text-muted)]">Analisis mendalam dari data sensor kendaraan</p>
+        </div>
+
+        {/* Time Range Selector */}
+        <div className="card-container p-6">
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center gap-3">
+              <div className="rounded-lg bg-[var(--accent-soft)] p-2">
+                <Clock className="h-5 w-5 text-[var(--accent)]" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-[var(--text-primary)]">Rentang Waktu Data</h3>
+                <p className="text-xs text-[var(--text-muted)]">Pilih periode data untuk dianalisis</p>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              {TIME_RANGE_OPTIONS.map((option) => (
+                <button
+                  key={option.value}
+                  onClick={() => handleTimeRangeChange(option.value)}
+                  className={`rounded-lg px-4 py-2 text-sm font-semibold transition ${
+                    timeRange === option.value
+                      ? "bg-[var(--accent)] text-white"
+                      : "border border-[var(--border-color)] text-[var(--text-secondary)] hover:bg-[var(--accent-soft)]"
+                  }`}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+
+            {showCustomDatePicker && (
+              <div className="mt-2 rounded-lg border border-[var(--border-color)] bg-[var(--bg-secondary)] p-4">
+                <div className="mb-3 flex items-center gap-2">
+                  <Calendar className="h-4 w-4 text-[var(--accent)]" />
+                  <h4 className="font-semibold text-[var(--text-primary)]">Pilih Rentang Tanggal Custom</h4>
+                </div>
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+                  <div className="flex-1">
+                    <label className="mb-1 block text-xs font-medium text-[var(--text-muted)]">Tanggal Mulai</label>
+                    <input
+                      type="date"
+                      value={customStartDate}
+                      onChange={(e) => setCustomStartDate(e.target.value)}
+                      className="w-full rounded-lg border border-[var(--border-color)] bg-[var(--bg-primary)] px-3 py-2 text-sm text-[var(--text-primary)] outline-none focus:border-[var(--accent)]"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <label className="mb-1 block text-xs font-medium text-[var(--text-muted)]">Tanggal Akhir</label>
+                    <input
+                      type="date"
+                      value={customEndDate}
+                      onChange={(e) => setCustomEndDate(e.target.value)}
+                      className="w-full rounded-lg border border-[var(--border-color)] bg-[var(--bg-primary)] px-3 py-2 text-sm text-[var(--text-primary)] outline-none focus:border-[var(--accent)]"
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={handleCustomDateApply}
+                      className="rounded-lg bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90"
+                    >
+                      Terapkan
+                    </button>
+                    <button
+                      onClick={() => {
+                        setShowCustomDatePicker(false);
+                        setTimeRange("all");
+                        setCustomStartDate("");
+                        setCustomEndDate("");
+                      }}
+                      className="rounded-lg border border-[var(--border-color)] px-4 py-2 text-sm font-semibold text-[var(--text-muted)] transition hover:bg-[var(--accent-soft)]"
+                    >
+                      Batal
+                    </button>
+                  </div>
+                </div>
+                {(customStartDate || customEndDate) && (
+                  <p className="mt-2 text-xs text-[var(--text-muted)]">
+                    {customStartDate && customEndDate
+                      ? `Data dari ${customStartDate} sampai ${customEndDate}`
+                      : customStartDate
+                      ? `Data dari ${customStartDate}`
+                      : `Data sampai ${customEndDate}`}
+                  </p>
+                )}
+              </div>
+            )}
+
+            {loading && (
+              <div className="text-center">
+                <p className="text-sm text-[var(--text-muted)]">Memuat data...</p>
+              </div>
+            )}
+
+            {!loading && period1Data && period1Data.length === 0 && (
+              <div className="rounded-lg border border-yellow-500/40 bg-yellow-500/10 p-4 text-center">
+                <p className="text-sm font-medium text-yellow-600 dark:text-yellow-400">
+                  Tidak ada data untuk rentang waktu yang dipilih
+                </p>
+                <p className="text-xs text-[var(--text-muted)] mt-1">
+                  Coba pilih "Semua Data" atau rentang waktu yang berbeda
+                </p>
+              </div>
+            )}
+
+            {!loading && period1Data && period1Data.length > 0 && (
+              <div className="flex flex-wrap gap-4 text-sm">
+                <div className="flex items-center gap-2">
+                  <span className="text-[var(--text-muted)]">Total Data:</span>
+                  <span className="font-semibold text-[var(--text-primary)]">{period1Data.length} record</span>
+                </div>
+                {period1Data.length > 0 && (
+                  <>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[var(--text-muted)]">Dari:</span>
+                      <span className="font-medium text-[var(--text-secondary)]">
+                        {new Date(period1Data[0].timestamp).toLocaleDateString('id-ID', {
+                          day: '2-digit',
+                          month: 'short',
+                          year: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[var(--text-muted)]">Sampai:</span>
+                      <span className="font-medium text-[var(--text-secondary)]">
+                        {new Date(period1Data[period1Data.length - 1].timestamp).toLocaleDateString('id-ID', {
+                          day: '2-digit',
+                          month: 'short',
+                          year: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </span>
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Engine Health Score */}
