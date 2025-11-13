@@ -13,8 +13,20 @@
   <!-- Letter "E" -->
   <text x="50" y="70" font-family="Arial, sans-serif" font-size="60" font-weight="bold" fill="#FFFFFF" text-anchor="middle">E</text>
   
-  <!-- Small engine icon/gear symbol -->
-  <circle cx="75" cy="30" r="12" fill="#FFFFFF" opacity="0.9"/>
-  <circle cx="75" cy="30" r="8" fill="#F97316"/>
-  <circle cx="75" cy="30" r="3" fill="#FFFFFF"/>
+  <!-- Gear/Cog icon (engine symbol) -->
+  <g transform="translate(75, 30)">
+    <!-- Outer gear teeth -->
+    <path d="M 0,-12 L 2,-10 L 2,-6 L 0,-4 L -2,-6 L -2,-10 Z" fill="#FFFFFF" opacity="0.95"/>
+    <path d="M 0,-12 L 2,-10 L 2,-6 L 0,-4 L -2,-6 L -2,-10 Z" fill="#FFFFFF" opacity="0.95" transform="rotate(60)"/>
+    <path d="M 0,-12 L 2,-10 L 2,-6 L 0,-4 L -2,-6 L -2,-10 Z" fill="#FFFFFF" opacity="0.95" transform="rotate(120)"/>
+    <path d="M 0,-12 L 2,-10 L 2,-6 L 0,-4 L -2,-6 L -2,-10 Z" fill="#FFFFFF" opacity="0.95" transform="rotate(180)"/>
+    <path d="M 0,-12 L 2,-10 L 2,-6 L 0,-4 L -2,-6 L -2,-10 Z" fill="#FFFFFF" opacity="0.95" transform="rotate(240)"/>
+    <path d="M 0,-12 L 2,-10 L 2,-6 L 0,-4 L -2,-6 L -2,-10 Z" fill="#FFFFFF" opacity="0.95" transform="rotate(300)"/>
+    
+    <!-- Gear body -->
+    <circle cx="0" cy="0" r="8" fill="#FFFFFF" opacity="0.95"/>
+    
+    <!-- Center hole -->
+    <circle cx="0" cy="0" r="3.5" fill="#F97316"/>
+  </g>
 </svg>
