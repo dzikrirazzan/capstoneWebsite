@@ -376,7 +376,7 @@ function AnalyticsPage({ theme, onToggleTheme }) {
       } else if (timeRange !== "all") {
         period1End = new Date();
         period1Start = new Date();
-        
+
         switch (timeRange) {
           case "1h":
             period1Start.setHours(period1Start.getHours() - 1);
@@ -529,12 +529,6 @@ function AnalyticsPage({ theme, onToggleTheme }) {
       <Header theme={theme} onToggleTheme={onToggleTheme} />
 
       <div className="container mx-auto space-y-6 p-6">
-        {/* Page Header */}
-        <div>
-          <h1 className="text-2xl font-bold text-[var(--text-primary)]">Analisis Performa</h1>
-          <p className="text-sm text-[var(--text-muted)]">Analisis mendalam dari data sensor kendaraan</p>
-        </div>
-
         {/* Time Range Selector */}
         <div className="card-container p-6">
           <div className="flex flex-col gap-4">
@@ -543,8 +537,8 @@ function AnalyticsPage({ theme, onToggleTheme }) {
                 <Clock className="h-5 w-5 text-[var(--accent)]" />
               </div>
               <div>
-                <h3 className="font-semibold text-[var(--text-primary)]">Rentang Waktu Data</h3>
-                <p className="text-xs text-[var(--text-muted)]">Pilih periode data untuk dianalisis</p>
+                <h3 className="text-xl font-bold text-[var(--text-primary)]">Analisis Performa</h3>
+                <p className="text-sm text-[var(--text-muted)]">Analisis mendalam dari data sensor kendaraan - Pilih periode data untuk dianalisis</p>
               </div>
             </div>
 
@@ -554,9 +548,7 @@ function AnalyticsPage({ theme, onToggleTheme }) {
                   key={option.value}
                   onClick={() => handleTimeRangeChange(option.value)}
                   className={`rounded-lg px-4 py-2 text-sm font-semibold transition ${
-                    timeRange === option.value
-                      ? "bg-[var(--accent)] text-white"
-                      : "border border-[var(--border-color)] text-[var(--text-secondary)] hover:bg-[var(--accent-soft)]"
+                    timeRange === option.value ? "bg-[var(--accent)] text-white" : "border border-[var(--border-color)] text-[var(--text-secondary)] hover:bg-[var(--accent-soft)]"
                   }`}
                 >
                   {option.label}
@@ -590,10 +582,7 @@ function AnalyticsPage({ theme, onToggleTheme }) {
                     />
                   </div>
                   <div className="flex gap-2">
-                    <button
-                      onClick={handleCustomDateApply}
-                      className="rounded-lg bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90"
-                    >
+                    <button onClick={handleCustomDateApply} className="rounded-lg bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90">
                       Terapkan
                     </button>
                     <button
@@ -611,11 +600,7 @@ function AnalyticsPage({ theme, onToggleTheme }) {
                 </div>
                 {(customStartDate || customEndDate) && (
                   <p className="mt-2 text-xs text-[var(--text-muted)]">
-                    {customStartDate && customEndDate
-                      ? `Data dari ${customStartDate} sampai ${customEndDate}`
-                      : customStartDate
-                      ? `Data dari ${customStartDate}`
-                      : `Data sampai ${customEndDate}`}
+                    {customStartDate && customEndDate ? `Data dari ${customStartDate} sampai ${customEndDate}` : customStartDate ? `Data dari ${customStartDate}` : `Data sampai ${customEndDate}`}
                   </p>
                 )}
               </div>
@@ -629,12 +614,8 @@ function AnalyticsPage({ theme, onToggleTheme }) {
 
             {!loading && period1Data && period1Data.length === 0 && (
               <div className="rounded-lg border border-yellow-500/40 bg-yellow-500/10 p-4 text-center">
-                <p className="text-sm font-medium text-yellow-600 dark:text-yellow-400">
-                  Tidak ada data untuk rentang waktu yang dipilih
-                </p>
-                <p className="text-xs text-[var(--text-muted)] mt-1">
-                  Coba pilih "Semua Data" atau rentang waktu yang berbeda
-                </p>
+                <p className="text-sm font-medium text-yellow-600 dark:text-yellow-400">Tidak ada data untuk rentang waktu yang dipilih</p>
+                <p className="text-xs text-[var(--text-muted)] mt-1">Coba pilih "Semua Data" atau rentang waktu yang berbeda</p>
               </div>
             )}
 
@@ -649,24 +630,24 @@ function AnalyticsPage({ theme, onToggleTheme }) {
                     <div className="flex items-center gap-2">
                       <span className="text-[var(--text-muted)]">Dari:</span>
                       <span className="font-medium text-[var(--text-secondary)]">
-                        {new Date(period1Data[0].timestamp).toLocaleDateString('id-ID', {
-                          day: '2-digit',
-                          month: 'short',
-                          year: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit'
+                        {new Date(period1Data[0].timestamp).toLocaleDateString("id-ID", {
+                          day: "2-digit",
+                          month: "short",
+                          year: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
                         })}
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="text-[var(--text-muted)]">Sampai:</span>
                       <span className="font-medium text-[var(--text-secondary)]">
-                        {new Date(period1Data[period1Data.length - 1].timestamp).toLocaleDateString('id-ID', {
-                          day: '2-digit',
-                          month: 'short',
-                          year: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit'
+                        {new Date(period1Data[period1Data.length - 1].timestamp).toLocaleDateString("id-ID", {
+                          day: "2-digit",
+                          month: "short",
+                          year: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
                         })}
                       </span>
                     </div>
