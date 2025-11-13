@@ -6,7 +6,7 @@ import { cn } from "../lib/utils.js";
 const navigation = [
   { label: "Dashboard", href: "/" },
   { label: "Analisis", href: "/analytics" },
-  { label: "Riwayat Sensor", href: "/history" },
+  { label: "Riwayat Data", href: "/history" },
 ];
 
 export default function Header({ theme, onToggleTheme }) {

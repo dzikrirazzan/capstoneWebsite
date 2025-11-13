@@ -40,7 +40,7 @@ export default function HistoryFilters({ filters, onChange, onApply, onResetFilt
     <div className="card-container space-y-6 p-6">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div className="space-y-1">
-          <h1 className="text-2xl font-semibold text-[var(--text-primary)]">Riwayat Sensor</h1>
+          <h1 className="text-2xl font-semibold text-[var(--text-primary)]">Riwayat Data</h1>
           <p className="text-sm text-[var(--text-muted)]">Atur rentang waktu, jumlah entri, dan kelola data sensor di sini.</p>
         </div>
 
@@ -53,13 +53,9 @@ export default function HistoryFilters({ filters, onChange, onApply, onResetFilt
             <RefreshCw className="h-4 w-4" />
             Refresh
           </button>
-          <button
-            onClick={onExport}
-            disabled={isExporting || isLoading}
-            className="inline-flex items-center justify-center gap-2 rounded-lg border border-transparent bg-[var(--accent-soft)] px-4 py-2 text-sm font-medium text-[var(--accent)] transition enabled:hover:bg-[var(--accent)] enabled:hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
-          >
+                    <button onClick={onExport} disabled={isExporting} className="flex items-center gap-2 rounded-lg bg-[var(--accent)] px-4 py-2 text-sm font-medium text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50">
             <Download className="h-4 w-4" />
-            {isExporting ? "Mengekspor..." : "Ekspor CSV"}
+            {isExporting ? "Mengekspor..." : "Ekspor Excel"}
           </button>
           <button
             onClick={openDeleteModal}
