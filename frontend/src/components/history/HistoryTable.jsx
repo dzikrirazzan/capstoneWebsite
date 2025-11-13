@@ -7,11 +7,11 @@ export default function HistoryTable({ data }) {
         <thead>
           <tr className="bg-[var(--bg-muted)] text-left text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">
             <th className="px-4 py-3">Waktu</th>
-            <th className="px-4 py-3">RPM</th>
-            <th className="px-4 py-3">Torque</th>
-            <th className="px-4 py-3">MAF</th>
-            <th className="px-4 py-3">Temperature</th>
-            <th className="px-4 py-3">Fuel</th>
+            <th className="px-4 py-3">Putaran Mesin</th>
+            <th className="px-4 py-3">Torsi</th>
+            <th className="px-4 py-3">Aliran Udara</th>
+            <th className="px-4 py-3">Suhu</th>
+            <th className="px-4 py-3">Konsumsi BBM</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-[var(--border-color)] text-sm text-[var(--text-secondary)]">

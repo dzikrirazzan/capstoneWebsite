@@ -11,32 +11,19 @@ export default function HistoryTable({ data, pagination, isLoading, error, onPag
     <div className="card-container p-6">
       <div className="mb-4">
         <h2 className="text-xl font-bold text-[var(--text-primary)]">Riwayat Pembacaan Sensor</h2>
-        <p className="text-sm text-[var(--text-muted)]">
-          Daftar data sensor terbaru yang tersimpan di database.
-        </p>
+        <p className="text-sm text-[var(--text-muted)]">Daftar data sensor terbaru yang tersimpan di database.</p>
       </div>
 
-      {error && (
-        <div className="mb-4 rounded-lg border border-red-500/40 bg-[rgba(239,68,68,0.12)] px-4 py-3 text-sm text-[#fca5a5]">
-          {error}
-        </div>
-      )}
+      {error && <div className="mb-4 rounded-lg border border-red-500/40 bg-[rgba(239,68,68,0.12)] px-4 py-3 text-sm text-[#fca5a5]">{error}</div>}
 
       {isLoading ? (
-        <div className="rounded-lg border border-[var(--border-color)] bg-[var(--bg-card)] px-4 py-6 text-center text-sm text-[var(--text-muted)]">
-          Memuat data histori...
-        </div>
+        <div className="rounded-lg border border-[var(--border-color)] bg-[var(--bg-card)] px-4 py-6 text-center text-sm text-[var(--text-muted)]">Memuat data histori...</div>
       ) : data.length === 0 ? (
-        <div className="rounded-lg border border-[var(--border-color)] bg-[var(--bg-card)] px-4 py-6 text-center text-sm text-[var(--text-muted)]">
-          Belum ada data tersimpan.
-        </div>
+        <div className="rounded-lg border border-[var(--border-color)] bg-[var(--bg-card)] px-4 py-6 text-center text-sm text-[var(--text-muted)]">Belum ada data tersimpan.</div>
       ) : (
         <div className="space-y-3">
           {data.map((item) => (
-            <article
-              key={item.id}
-              className="rounded-lg border border-[var(--border-color)] bg-[var(--bg-card)] px-4 py-4 transition hover:border-[var(--accent)]/60"
-            >
+            <article key={item.id} className="rounded-lg border border-[var(--border-color)] bg-[var(--bg-card)] px-4 py-4 transition hover:border-[var(--accent)]/60">
               <div>
                 <p className="text-xs uppercase tracking-wide text-[var(--text-muted)]">Timestamp</p>
                 <p className="text-sm font-medium text-[var(--text-secondary)]">{formatDate(item.timestamp)}</p>
@@ -44,23 +31,23 @@ export default function HistoryTable({ data, pagination, isLoading, error, onPag
 
               <dl className="mt-4 grid grid-cols-2 gap-3 text-sm text-[var(--text-muted)] md:grid-cols-4">
                 <div>
-                  <dt className="text-xs uppercase tracking-wide text-[var(--text-muted)]">RPM</dt>
+                  <dt className="text-xs uppercase tracking-wide text-[var(--text-muted)]">Putaran Mesin</dt>
                   <dd className="text-base font-semibold text-[var(--text-secondary)]">{formatNumber(item.rpm, 0)}</dd>
                 </div>
                 <div>
-                  <dt className="text-xs uppercase tracking-wide text-[var(--text-muted)]">Torque</dt>
+                  <dt className="text-xs uppercase tracking-wide text-[var(--text-muted)]">Torsi</dt>
                   <dd className="text-[var(--text-secondary)]">{formatNumber(item.torque, 1)} Nm</dd>
                 </div>
                 <div>
-                  <dt className="text-xs uppercase tracking-wide text-[var(--text-muted)]">MAF</dt>
+                  <dt className="text-xs uppercase tracking-wide text-[var(--text-muted)]">Aliran Udara</dt>
                   <dd className="text-[var(--text-secondary)]">{formatNumber(item.maf, 1)} g/s</dd>
                 </div>
                 <div>
-                  <dt className="text-xs uppercase tracking-wide text-[var(--text-muted)]">Temperature</dt>
+                  <dt className="text-xs uppercase tracking-wide text-[var(--text-muted)]">Suhu</dt>
                   <dd className="text-[var(--text-secondary)]">{formatNumber(item.temperature, 1)} °C</dd>
                 </div>
                 <div>
-                  <dt className="text-xs uppercase tracking-wide text-[var(--text-muted)]">Fuel</dt>
+                  <dt className="text-xs uppercase tracking-wide text-[var(--text-muted)]">Konsumsi BBM</dt>
                   <dd className="text-[var(--text-secondary)]">{formatNumber(item.fuelConsumption, 2)} L/h</dd>
                 </div>
                 {item.customSensor !== null && item.customSensor !== undefined && (
