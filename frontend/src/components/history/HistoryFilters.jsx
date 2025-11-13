@@ -3,18 +3,7 @@ import { Download, RefreshCw, Filter, Trash2, X } from "lucide-react";
 
 const LIMIT_OPTIONS = [20, 50, 100, 200];
 
-export default function HistoryFilters({
-  filters,
-  onChange,
-  onApply,
-  onResetFilters,
-  onRefresh,
-  onExport,
-  onResetData,
-  isLoading,
-  isExporting,
-  isResetting,
-}) {
+export default function HistoryFilters({ filters, onChange, onApply, onResetFilters, onRefresh, onExport, onResetData, isLoading, isExporting, isResetting }) {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [modalRange, setModalRange] = useState({ start: "", end: "" });
 
@@ -52,9 +41,7 @@ export default function HistoryFilters({
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div className="space-y-1">
           <h1 className="text-2xl font-semibold text-[var(--text-primary)]">Riwayat Sensor</h1>
-          <p className="text-sm text-[var(--text-muted)]">
-            Atur rentang waktu, jumlah entri, dan kelola data sensor di sini.
-          </p>
+          <p className="text-sm text-[var(--text-muted)]">Atur rentang waktu, jumlah entri, dan kelola data sensor di sini.</p>
         </div>
 
         <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:justify-end">
@@ -106,11 +93,7 @@ export default function HistoryFilters({
         </div>
         <div className="flex flex-col gap-2">
           <label className="text-sm font-medium text-[var(--text-muted)]">Jumlah per halaman</label>
-          <select
-            value={filters.limit}
-            onChange={handleLimitChange}
-            className="rounded-lg border border-[var(--border-color)] bg-[var(--bg-card)] px-3 py-2 text-sm text-[var(--text-secondary)] outline-none focus:border-[var(--accent)]"
-          >
+          <select value={filters.limit} onChange={handleLimitChange} className="rounded-lg border border-[var(--border-color)] bg-[var(--bg-card)] px-3 py-2 text-sm text-[var(--text-secondary)] outline-none focus:border-[var(--accent)]">
             {LIMIT_OPTIONS.map((option) => (
               <option key={option} value={option}>
                 {option} data
@@ -149,10 +132,7 @@ export default function HistoryFilters({
                 <h3 className="text-lg font-semibold text-[var(--text-primary)]">Hapus Data Sensor</h3>
                 <p className="text-sm text-[var(--text-muted)]">Pilih rentang tanggal untuk menghapus sebagian data, atau hapus semua data.</p>
               </div>
-              <button
-                onClick={closeDeleteModal}
-                className="rounded-md p-1 text-[var(--text-muted)] transition hover:bg-[var(--bg-muted)]"
-              >
+              <button onClick={closeDeleteModal} className="rounded-md p-1 text-[var(--text-muted)] transition hover:bg-[var(--bg-muted)]">
                 <X className="h-4 w-4" />
               </button>
             </div>

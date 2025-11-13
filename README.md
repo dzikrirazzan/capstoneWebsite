@@ -1,51 +1,34 @@
-# 🚗⚡ FuelSense - Engine Monitoring System<<<<<<< HEAD
+# 🚗⚡ EMSys - Engine Monitoring System
 
-Modern real-time vehicle engine monitoring web application with **React** frontend, **Express.js** backend, and **PostgreSQL** database (Supabase).# capstoneWebsite
+Modern real-time vehicle engine monitoring web application with **React** frontend, **Express.js** backend, and **PostgreSQL** database.
 
----=======
+---
 
-## 🌟 Features# 🚗⚡ EMSys - Engine Monitoring System
+## 🌟 Features
 
-- ✅ **Real-time Monitoring**: Live RPM, Torque, MAF, Temperature, Fuel ConsumptionModern real-time vehicle engine monitoring web application built with Express.js, React, and MySQL.
-
+- ✅ **Real-time Monitoring**: Live RPM, Torsi, MAF, Suhu, Konsumsi BBM
 - ✅ **Analytics Dashboard**: Health Score, Fuel Efficiency, Data Comparison
+- ✅ **Interactive Charts**: Visualize sensor trends with Recharts
+- ✅ **Historical Data**: PostgreSQL database with full history
+- ✅ **Responsive Design**: Works on desktop, tablet, mobile
+- ✅ **Data Export**: Excel (.xlsx) export functionality
+- ✅ **Modern UI**: Orange theme with TailwindCSS
+- ✅ **Desktop App Integration**: HTTP API for data ingestion
 
-- ✅ **Interactive Charts**: Visualize sensor trends with Recharts## 📋 Table of Contents
+---
 
-- ✅ **Historical Data**: PostgreSQL database with 7+ days history
+## 🛠️ Tech Stack
 
-- ✅ **Responsive Design**: Works on desktop, tablet, mobile- [Overview](#overview)
+### Backend
 
-- ✅ **Data Export**: CSV export functionality- [Features](#features)
-
-- ✅ **Modern UI**: Dark theme with TailwindCSS- [Tech Stack](#tech-stack)
-
-- [Project Structure](#project-structure)
-
----- [Installation](#installation)
-
-- [Configuration](#configuration)
-
-## 🛠️ Tech Stack- [Running the Application](#running-the-application)
-
-- [API Documentation](#api-documentation)
-
-### Backend- [Desktop App Integration](#desktop-app-integration)
-
-- **Express.js** - REST API server- [Screenshots](#screenshots)
-
+- **Express.js** - REST API server
 - **PostgreSQL** (Supabase) - Database
-
-- **Prisma ORM** - Database access layer## 🌟 Overview
-
-- **serverless-http** - Vercel deployment adapter
-
-EMSys (Engine Monitoring System) is a near real-time monitoring system for vehicle engine parameters. Desktop application (terhubung ke ECU via USB/Serial) mengirim data secara periodik melalui HTTP `POST /api/sensor-data`, kemudian dashboard React mem-polling update terbaru dan menampilkan histori yang tersimpan di MySQL.
+- **Prisma ORM** - Database access layer
+- **Vercel** - Serverless deployment
 
 ### Frontend
 
-- **React 18** + **Vite** - Fast development**Data Flow:**
-
+- **React 18** + **Vite** - Fast development
 - **TailwindCSS** - Styling
 
 - **Recharts** - Data visualization```
