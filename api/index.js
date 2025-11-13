@@ -280,12 +280,12 @@ export default async function handler(req, res) {
         { header: "", key: "maf", width: 12 },
       ];
 
-      dataSheet.getCell("A5").value = "Timestamp";
-      dataSheet.getCell("B5").value = "Torsi (Nm)";
-      dataSheet.getCell("C5").value = "BBM (L/h)";
-      dataSheet.getCell("D5").value = "RPM";
-      dataSheet.getCell("E5").value = "Temperature (°C)";
-      dataSheet.getCell("F5").value = "MAF (g/s)";
+      dataSheet.getCell("A5").value = "Waktu";
+      dataSheet.getCell("B5").value = "RPM";
+      dataSheet.getCell("C5").value = "Torsi (Nm)";
+      dataSheet.getCell("D5").value = "MAF (g/s)";
+      dataSheet.getCell("E5").value = "Suhu (°C)";
+      dataSheet.getCell("F5").value = "Konsumsi BBM (L/h)";
 
       // Style header row
       dataSheet.getRow(5).font = { bold: true, size: 11, color: { argb: "FFFFFFFF" } };
@@ -302,11 +302,11 @@ export default async function handler(req, res) {
       data.forEach((row) => {
         dataSheet.addRow({
           timestamp: formatTimestamp(row.timestamp),
-          torque: row.torque,
-          fuelConsumption: row.fuelConsumption,
           rpm: row.rpm,
-          temperature: row.temperature,
+          torque: row.torque,
           maf: row.maf,
+          temperature: row.temperature,
+          fuelConsumption: row.fuelConsumption,
         });
         currentRow++;
       });
@@ -321,25 +321,25 @@ export default async function handler(req, res) {
       summarySheet.getColumn(6).width = 10;
 
       // Title
-      summarySheet.getCell("A1").value = "FUELSENSE - ENGINE MONITORING SYSTEM - DATA SUMMARY";
+      summarySheet.getCell("A1").value = "EMSys - RINGKASAN DATA SENSOR";
       summarySheet.getCell("A1").font = { bold: true, size: 14 };
       summarySheet.mergeCells("A1:F1");
 
       // Metadata
-      summarySheet.getCell("A3").value = "Export Date:";
+      summarySheet.getCell("A3").value = "Tanggal Ekspor:";
       summarySheet.getCell("B3").value = exportDate;
-      summarySheet.getCell("A4").value = "Total Records:";
+      summarySheet.getCell("A4").value = "Total Data:";
       summarySheet.getCell("B4").value = data.length;
-      summarySheet.getCell("A5").value = "Duration:";
-      summarySheet.getCell("B5").value = `${durationMinutes} minutes`;
+      summarySheet.getCell("A5").value = "Durasi:";
+      summarySheet.getCell("B5").value = `${durationMinutes} menit`;
 
       // Statistics table header
       summarySheet.getCell("A7").value = "Parameter";
-      summarySheet.getCell("B7").value = "Current";
-      summarySheet.getCell("C7").value = "Average";
+      summarySheet.getCell("B7").value = "Terkini";
+      summarySheet.getCell("C7").value = "Rata-rata";
       summarySheet.getCell("D7").value = "Minimum";
-      summarySheet.getCell("E7").value = "Maximum";
-      summarySheet.getCell("F7").value = "Unit";
+      summarySheet.getCell("E7").value = "Maksimum";
+      summarySheet.getCell("F7").value = "Satuan";
 
       const headerRow = summarySheet.getRow(7);
       headerRow.font = { bold: true };
@@ -351,11 +351,11 @@ export default async function handler(req, res) {
 
       // Statistics data
       const statsData = [
-        ["Torsi", stats.torque.current.toFixed(2), stats.torque.average.toFixed(2), stats.torque.min.toFixed(2), stats.torque.max.toFixed(2), "Nm"],
-        ["BBM", stats.fuelConsumption.current.toFixed(2), stats.fuelConsumption.average.toFixed(2), stats.fuelConsumption.min.toFixed(2), stats.fuelConsumption.max.toFixed(2), "L/h"],
         ["RPM", stats.rpm.current.toFixed(0), stats.rpm.average.toFixed(0), stats.rpm.min.toFixed(0), stats.rpm.max.toFixed(0), "RPM"],
-        ["Temperature", stats.temperature.current.toFixed(1), stats.temperature.average.toFixed(1), stats.temperature.min.toFixed(1), stats.temperature.max.toFixed(1), "°C"],
+        ["Torsi", stats.torque.current.toFixed(2), stats.torque.average.toFixed(2), stats.torque.min.toFixed(2), stats.torque.max.toFixed(2), "Nm"],
         ["MAF", stats.maf.current.toFixed(1), stats.maf.average.toFixed(1), stats.maf.min.toFixed(1), stats.maf.max.toFixed(1), "g/s"],
+        ["Suhu", stats.temperature.current.toFixed(1), stats.temperature.average.toFixed(1), stats.temperature.min.toFixed(1), stats.temperature.max.toFixed(1), "°C"],
+        ["Konsumsi BBM", stats.fuelConsumption.current.toFixed(2), stats.fuelConsumption.average.toFixed(2), stats.fuelConsumption.min.toFixed(2), stats.fuelConsumption.max.toFixed(2), "L/h"],
       ];
 
       statsData.forEach((rowData, index) => {

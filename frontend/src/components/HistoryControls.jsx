@@ -47,7 +47,7 @@ export default function HistoryControls({
             className="inline-flex items-center justify-center gap-2 rounded-lg border border-transparent bg-[var(--accent-soft)] px-4 py-2 text-sm font-medium text-[var(--accent)] transition enabled:hover:bg-[var(--accent)] enabled:hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
           >
             <Download className="h-4 w-4" />
-            {isExporting ? "Exporting..." : "Export CSV"}
+            {isExporting ? "Mengekspor..." : "Ekspor Excel"}
           </button>
           <button
             onClick={onResetData}
@@ -55,7 +55,7 @@ export default function HistoryControls({
             className="inline-flex items-center justify-center gap-2 rounded-lg border border-transparent bg-[rgba(239,68,68,0.12)] px-4 py-2 text-sm font-medium text-[#f87171] transition enabled:hover:bg-[#ef4444] enabled:hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
           >
             <Trash2 className="h-4 w-4" />
-            {isResetting ? "Deleting..." : "Hapus Data"}
+            {isResetting ? "Menghapus..." : "Hapus Data"}
           </button>
         </div>
       </div>

@@ -445,16 +445,17 @@ function AnalyticsPage({ theme, onToggleTheme }) {
         period2Start = new Date(customPeriod2.start);
         period2End = new Date(customPeriod2.end);
       } else if (comparisonMode === "today-yesterday") {
-        period1Start = new Date(now.setHours(0, 0, 0, 0));
+        const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
+        period1Start = todayStart;
         period1End = new Date();
-        period2Start = new Date(period1Start.getTime() - 24 * 60 * 60 * 1000);
+        period2Start = new Date(todayStart.getTime() - 24 * 60 * 60 * 1000);
         period2End = new Date(period1End.getTime() - 24 * 60 * 60 * 1000);
       } else if (comparisonMode === "week-week") {
         const dayOfWeek = now.getDay();
-        period1Start = new Date(now.setDate(now.getDate() - dayOfWeek));
-        period1Start.setHours(0, 0, 0, 0);
+        const weekStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - dayOfWeek, 0, 0, 0, 0);
+        period1Start = weekStart;
         period1End = new Date();
-        period2Start = new Date(period1Start.getTime() - 7 * 24 * 60 * 60 * 1000);
+        period2Start = new Date(weekStart.getTime() - 7 * 24 * 60 * 60 * 1000);
         period2End = new Date(period1End.getTime() - 7 * 24 * 60 * 60 * 1000);
       } else if (comparisonMode === "month-month") {
         period1Start = new Date(now.getFullYear(), now.getMonth(), 1);
