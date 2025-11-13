@@ -400,7 +400,7 @@ export default async function handler(req, res) {
       chartSheet.getCell("D4").value = "Torque (Nm)";
       chartSheet.getCell("E4").value = "Fuel (L/h)";
       chartSheet.getCell("F4").value = "MAF (g/s)";
-      
+
       chartSheet.getRow(4).font = { bold: true, color: { argb: "FFFFFFFF" } };
       chartSheet.getRow(4).fill = {
         type: "pattern",
