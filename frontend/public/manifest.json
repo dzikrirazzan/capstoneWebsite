@@ -1,0 +1,20 @@
+{
+  "name": "EMSys - Engine Monitoring System",
+  "short_name": "EMSys",
+  "description": "Real-time vehicle engine monitoring and fuel efficiency analysis",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0F172A",
+  "theme_color": "#F97316",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/fuelsense-logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["utilities", "productivity"],
+  "screenshots": []
+}
