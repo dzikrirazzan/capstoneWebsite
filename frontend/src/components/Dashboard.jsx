@@ -11,6 +11,9 @@ export default function Dashboard({
   statsError,
   statsRange,
   onStatsRangeChange,
+  onCustomDateChange,
+  customStartDate,
+  customEndDate,
   statsLoading,
   chartData,
   chartLoading,
@@ -29,18 +32,14 @@ export default function Dashboard({
             error={chartError}
             selectedRange={statsRange}
             onRangeChange={onStatsRangeChange}
+            onCustomDateChange={onCustomDateChange}
+            customStartDate={customStartDate}
+            customEndDate={customEndDate}
           />
 
           <SummaryCards summaryCounts={summaryCounts} />
 
-          <StatsPanel
-            sensorData={sensorData}
-            stats={stats}
-            statsError={statsError}
-            statsRange={statsRange}
-            onRangeChange={onStatsRangeChange}
-            isLoading={statsLoading}
-          />
+          <StatsPanel sensorData={sensorData} stats={stats} statsError={statsError} statsRange={statsRange} onRangeChange={onStatsRangeChange} isLoading={statsLoading} />
         </section>
       </main>
     </div>

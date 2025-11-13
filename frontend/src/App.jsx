@@ -47,7 +47,9 @@ function App() {
   const [sensorData, setSensorData] = useState(null);
   const [stats, setStats] = useState(null);
   const [statsError, setStatsError] = useState(null);
-  const [statsRange, setStatsRange] = useState("1h");
+  const [statsRange, setStatsRange] = useState("all");
+  const [customStartDate, setCustomStartDate] = useState("");
+  const [customEndDate, setCustomEndDate] = useState("");
   const [statsLoading, setStatsLoading] = useState(false);
   const [chartData, setChartData] = useState([]);
   const [chartLoading, setChartLoading] = useState(false);
@@ -121,19 +123,28 @@ function App() {
       setStatsLoading(true);
       try {
         setStatsError(null);
-        const activeFilters = filters ?? appliedHistoryFiltersRef.current;
         const params = new URLSearchParams();
-        const startIso = toIsoString(activeFilters.start);
-        const endIso = toIsoString(activeFilters.end);
 
-        if (startIso) params.set("start", startIso);
-        if (endIso) params.set("end", endIso);
+        // Check if custom dates are being used
+        const hasCustomDates = customStartDate || customEndDate;
 
-        if (!startIso && !endIso) {
-          params.set("range", range);
-        } else {
+        if (hasCustomDates) {
+          if (customStartDate) {
+            const startDate = new Date(customStartDate);
+            startDate.setHours(0, 0, 0, 0);
+            params.set("start", startDate.toISOString());
+          }
+          if (customEndDate) {
+            const endDate = new Date(customEndDate);
+            endDate.setHours(23, 59, 59, 999);
+            params.set("end", endDate.toISOString());
+          }
           params.set("range", "custom");
+        } else if (range !== "all") {
+          // Use predefined range
+          params.set("range", range);
         }
+        // If range is "all", don't set any date params to get all data
 
         const response = await fetch(`${apiBaseUrl}/api/sensor-data/stats?${params.toString()}`);
         if (!response.ok) {
@@ -148,7 +159,7 @@ function App() {
         setStatsLoading(false);
       }
     },
-    [apiBaseUrl]
+    [apiBaseUrl, customStartDate, customEndDate]
   );
 
   const fetchChartData = useCallback(
@@ -156,16 +167,52 @@ function App() {
       setChartLoading(true);
       try {
         setChartError(null);
-        const activeFilters = filters ?? appliedHistoryFiltersRef.current;
         const params = new URLSearchParams();
-        const startIso = toIsoString(activeFilters.start);
-        const endIso = toIsoString(activeFilters.end);
 
-        if (startIso) params.set("start", startIso);
-        if (endIso) params.set("end", endIso);
+        // Check if custom dates are being used
+        const hasCustomDates = customStartDate || customEndDate;
 
-        const limitForSeries = Math.max(activeFilters.limit * 5, 200);
-        params.set("limit", limitForSeries.toString());
+        if (hasCustomDates) {
+          if (customStartDate) {
+            const startDate = new Date(customStartDate);
+            startDate.setHours(0, 0, 0, 0);
+            params.set("start", startDate.toISOString());
+          }
+          if (customEndDate) {
+            const endDate = new Date(customEndDate);
+            endDate.setHours(23, 59, 59, 999);
+            params.set("end", endDate.toISOString());
+          }
+        } else if (statsRange !== "all") {
+          // Calculate date range based on statsRange
+          const now = new Date();
+          let startDate = new Date();
+
+          switch (statsRange) {
+            case "1h":
+              startDate.setHours(now.getHours() - 1);
+              break;
+            case "24h":
+              startDate.setHours(now.getHours() - 24);
+              break;
+            case "7d":
+              startDate.setDate(now.getDate() - 7);
+              break;
+            case "30d":
+              startDate.setDate(now.getDate() - 30);
+              break;
+            default:
+              startDate = null;
+          }
+
+          if (startDate) {
+            params.set("start", startDate.toISOString());
+            params.set("end", now.toISOString());
+          }
+        }
+        // If range is "all", don't set any date params to get all data
+
+        params.set("limit", "1000");
 
         const response = await fetch(`${apiBaseUrl}/api/sensor-data/series?${params.toString()}`);
         if (!response.ok) {
@@ -182,7 +229,7 @@ function App() {
         setChartLoading(false);
       }
     },
-    [apiBaseUrl, updateSummaryDayWeek]
+    [apiBaseUrl, updateSummaryDayWeek, customStartDate, customEndDate, statsRange]
   );
 
   const fetchHistory = useCallback(
@@ -225,13 +272,14 @@ function App() {
 
   useEffect(() => {
     fetchHistory(1, appliedHistoryFiltersRef.current).catch(() => null);
-    fetchChartData(appliedHistoryFiltersRef.current).catch(() => null);
-    fetchStats(statsRangeRef.current, appliedHistoryFiltersRef.current).catch(() => null);
-  }, [fetchHistory, fetchChartData, fetchStats]);
+    fetchChartData().catch(() => null);
+    fetchStats(statsRange).catch(() => null);
+  }, [fetchHistory, fetchChartData, fetchStats, statsRange]);
 
   useEffect(() => {
-    fetchStats(statsRange, appliedHistoryFiltersRef.current).catch(() => null);
-  }, [fetchStats, statsRange]);
+    fetchStats(statsRange).catch(() => null);
+    fetchChartData().catch(() => null);
+  }, [fetchStats, fetchChartData, statsRange, customStartDate, customEndDate]);
 
   useEffect(() => {
     let intervalId;
@@ -262,11 +310,10 @@ function App() {
         latestRecordIdRef.current = latestId;
         setSensorData(payload);
 
-        await Promise.all([
-          fetchStats(statsRangeRef.current, appliedHistoryFiltersRef.current).catch(() => null),
-          fetchHistory(historyPageRef.current, appliedHistoryFiltersRef.current).catch(() => null),
-          fetchChartData(appliedHistoryFiltersRef.current).catch(() => null),
-        ]);
+        // Only refresh data if not using custom date range
+        if (!customStartDate && !customEndDate) {
+          await Promise.all([fetchStats(statsRangeRef.current).catch(() => null), fetchHistory(historyPageRef.current, appliedHistoryFiltersRef.current).catch(() => null), fetchChartData().catch(() => null)]);
+        }
       } catch (error) {
         console.error("Polling latest data failed", error);
       }
@@ -282,7 +329,7 @@ function App() {
         window.clearInterval(intervalId);
       }
     };
-  }, [apiBaseUrl, fetchChartData, fetchHistory, fetchStats]);
+  }, [apiBaseUrl, customStartDate, customEndDate, fetchChartData, fetchHistory, fetchStats]);
 
   useEffect(() => {
     if (historyPagination) {
@@ -292,6 +339,20 @@ function App() {
 
   const handleStatsRangeChange = useCallback((range) => {
     setStatsRange(range);
+    // Clear custom dates when selecting predefined range
+    if (range !== "custom") {
+      setCustomStartDate("");
+      setCustomEndDate("");
+    }
+  }, []);
+
+  const handleCustomDateChange = useCallback((updates) => {
+    if (updates?.start !== undefined) {
+      setCustomStartDate(updates.start);
+    }
+    if (updates?.end !== undefined) {
+      setCustomEndDate(updates.end);
+    }
   }, []);
 
   const handleHistoryPageChange = useCallback(
@@ -323,9 +384,7 @@ function App() {
     historyPageRef.current = 1;
 
     fetchHistory(1, normalized).catch(() => null);
-    fetchStats(statsRangeRef.current, normalized).catch(() => null);
-    fetchChartData(normalized).catch(() => null);
-  }, [fetchChartData, fetchHistory, fetchStats, historyFilters]);
+  }, [fetchHistory, historyFilters]);
 
   const resetHistoryFilters = useCallback(() => {
     setHistoryFilters(defaultHistoryFilters);
@@ -333,9 +392,7 @@ function App() {
     historyPageRef.current = 1;
 
     fetchHistory(1, defaultHistoryFilters).catch(() => null);
-    fetchStats(statsRangeRef.current, defaultHistoryFilters).catch(() => null);
-    fetchChartData(defaultHistoryFilters).catch(() => null);
-  }, [fetchChartData, fetchHistory, fetchStats]);
+  }, [fetchHistory]);
 
   const handleExportHistory = useCallback(async () => {
     try {
@@ -415,8 +472,8 @@ function App() {
         }
 
         await fetchHistory(1, appliedHistoryFiltersRef.current);
-        await fetchStats(statsRangeRef.current, appliedHistoryFiltersRef.current);
-        await fetchChartData(appliedHistoryFiltersRef.current);
+        await fetchStats(statsRange);
+        await fetchChartData();
       } catch (error) {
         console.error("Failed to delete history", error);
         setHistoryError("Gagal menghapus data.");
@@ -424,7 +481,7 @@ function App() {
         setIsResettingHistory(false);
       }
     },
-    [apiBaseUrl, fetchChartData, fetchHistory, fetchStats]
+    [apiBaseUrl, fetchChartData, fetchHistory, fetchStats, statsRange]
   );
 
   const toggleTheme = useCallback(() => {
@@ -445,6 +502,9 @@ function App() {
               statsError={statsError}
               statsRange={statsRange}
               onStatsRangeChange={handleStatsRangeChange}
+              onCustomDateChange={handleCustomDateChange}
+              customStartDate={customStartDate}
+              customEndDate={customEndDate}
               statsLoading={statsLoading}
               chartData={chartData}
               chartLoading={chartLoading}
