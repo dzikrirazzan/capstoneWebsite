@@ -61,7 +61,7 @@ export default async function handler(req, res) {
       let where = undefined;
       let startTime = null;
       let endTime = null;
-      
+
       // Handle custom date range
       if (startParam || endParam) {
         where = {};
@@ -90,7 +90,7 @@ export default async function handler(req, res) {
             startTime = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
             break;
         }
-        
+
         if (startTime) {
           where = { timestamp: { gte: startTime } };
           endTime = now;
@@ -139,7 +139,7 @@ export default async function handler(req, res) {
       const endParam = urlObj.searchParams.get("end");
 
       let where = undefined;
-      
+
       if (startParam || endParam) {
         where = {};
         if (startParam) {
