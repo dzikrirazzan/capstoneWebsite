@@ -226,7 +226,7 @@ export default async function handler(req, res) {
 
       // Create workbook
       const workbook = new ExcelJS.Workbook();
-      workbook.creator = "FuelSense - Engine Monitoring System";
+      workbook.creator = "EMSys - Engine Monitoring System";
       workbook.created = new Date();
 
       // ===== SHEET 1: Sensor Data =====
@@ -234,7 +234,7 @@ export default async function handler(req, res) {
 
       // Title and Date Range Info
       dataSheet.mergeCells("A1:F1");
-      dataSheet.getCell("A1").value = "FUELSENSE - SENSOR DATA EXPORT";
+      dataSheet.getCell("A1").value = "EMSys - EKSPOR DATA SENSOR";
       dataSheet.getCell("A1").font = { bold: true, size: 14, color: { argb: "FFFFFFFF" } };
       dataSheet.getCell("A1").fill = {
         type: "pattern",
@@ -425,7 +425,7 @@ export default async function handler(req, res) {
 
       // Generate filename
       const fileTimestamp = formatTimestamp(now).replace(/[: ]/g, "").replace(/-/g, "");
-      const filename = `FuelSenseData_${fileTimestamp}.xlsx`;
+      const filename = `EMSysData_${fileTimestamp}.xlsx`;
 
       // Write to buffer
       const buffer = await workbook.xlsx.writeBuffer();

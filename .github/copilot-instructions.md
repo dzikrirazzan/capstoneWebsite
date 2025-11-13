@@ -1,4 +1,4 @@
-# FuelSense Monitor Web App - Project Instructions
+# EMSys - Engine Monitoring System Web App - Project Instructions
 
 ## Project Overview
 

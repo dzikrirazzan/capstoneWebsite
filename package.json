@@ -18,7 +18,8 @@
     "start": "cd backend && node src/server.js"
   },
   "keywords": [
-    "fuelsense",
+    "emsys",
+    "engine-monitoring",
     "vehicle-monitoring",
     "real-time",
     "express",
