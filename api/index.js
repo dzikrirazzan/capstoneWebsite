@@ -54,11 +54,51 @@ export default async function handler(req, res) {
     // Get stats
     if (path === "/api/sensor-data/stats" || path.startsWith("/api/sensor-data/stats")) {
       const urlObj = new URL(req.url, `http://${req.headers.host}`);
-      const range = urlObj.searchParams.get("range") || "24h";
+      const range = urlObj.searchParams.get("range") || "all";
+      const startParam = urlObj.searchParams.get("start");
+      const endParam = urlObj.searchParams.get("end");
 
-      const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+      let where = undefined;
+      let startTime = null;
+      let endTime = null;
+      
+      // Handle custom date range
+      if (startParam || endParam) {
+        where = {};
+        if (startParam) {
+          startTime = new Date(startParam);
+          where.timestamp = { ...where.timestamp, gte: startTime };
+        }
+        if (endParam) {
+          endTime = new Date(endParam);
+          where.timestamp = { ...where.timestamp, lte: endTime };
+        }
+      } else if (range !== "all") {
+        // Handle predefined ranges
+        const now = new Date();
+        switch (range) {
+          case "1h":
+            startTime = new Date(now.getTime() - 60 * 60 * 1000);
+            break;
+          case "24h":
+            startTime = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+            break;
+          case "7d":
+            startTime = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+            break;
+          case "30d":
+            startTime = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+            break;
+        }
+        
+        if (startTime) {
+          where = { timestamp: { gte: startTime } };
+          endTime = now;
+        }
+      }
+
       const data = await prisma.sensorData.findMany({
-        where: { timestamp: { gte: oneDayAgo } },
+        where: where,
         orderBy: { timestamp: "desc" },
       });
 
@@ -71,8 +111,8 @@ export default async function handler(req, res) {
         count: data.length,
         timeRange: range,
         period: {
-          start: data.length > 0 ? data[data.length - 1].timestamp : null,
-          end: data.length > 0 ? data[0].timestamp : null,
+          start: startTime,
+          end: endTime,
         },
       };
 
@@ -94,11 +134,24 @@ export default async function handler(req, res) {
     // Get time series data
     if (path === "/api/sensor-data/series" || path.startsWith("/api/sensor-data/series")) {
       const urlObj = new URL(req.url, `http://${req.headers.host}`);
-      const limit = parseInt(urlObj.searchParams.get("limit") || "288", 10);
-      const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+      const limit = parseInt(urlObj.searchParams.get("limit") || "1000", 10);
+      const startParam = urlObj.searchParams.get("start");
+      const endParam = urlObj.searchParams.get("end");
+
+      let where = undefined;
+      
+      if (startParam || endParam) {
+        where = {};
+        if (startParam) {
+          where.timestamp = { ...where.timestamp, gte: new Date(startParam) };
+        }
+        if (endParam) {
+          where.timestamp = { ...where.timestamp, lte: new Date(endParam) };
+        }
+      }
 
       const data = await prisma.sensorData.findMany({
-        where: { timestamp: { gte: oneDayAgo } },
+        where: where,
         orderBy: { timestamp: "asc" },
         take: limit,
       });
