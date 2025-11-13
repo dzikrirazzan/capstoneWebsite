@@ -6,7 +6,8 @@
     "postinstall": "prisma generate"
   },
   "dependencies": {
-    "@prisma/client": "^5.20.0"
+    "@prisma/client": "^5.20.0",
+    "exceljs": "^4.4.0"
   },
   "devDependencies": {
     "prisma": "^5.20.0"
