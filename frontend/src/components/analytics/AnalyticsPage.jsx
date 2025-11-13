@@ -39,7 +39,7 @@ function AnalyticsPage({ theme, onToggleTheme }) {
   const [period2Data, setPeriod2Data] = useState(null);
   const [healthScore, setHealthScore] = useState(null);
   const [fuelMetrics, setFuelMetrics] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true); // Start with loading true
 
   const calculateHealthScore = useCallback((data) => {
     if (!data || data.length === 0) return null;
@@ -490,6 +490,8 @@ function AnalyticsPage({ theme, onToggleTheme }) {
       setShowCustomDatePicker(false);
       setCustomStartDate("");
       setCustomEndDate("");
+      // Immediately fetch data when non-custom range is selected
+      // The fetchComparisonData will be triggered by useEffect due to timeRange change
     }
   };
 
