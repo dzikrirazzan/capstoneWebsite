@@ -32,10 +32,6 @@ EMSys is a comprehensive engine monitoring solution that provides real-time data
 - PostgreSQL
 - ExcelJS (data export)
 
-### Deployment
-- Vercel (serverless functions)
-- Supabase (PostgreSQL hosting)
-
 ## Project Structure
 
 ```
