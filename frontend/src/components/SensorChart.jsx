@@ -5,10 +5,10 @@ import { ChartLine, AlertCircle, Calendar } from "lucide-react";
 
 const METRICS = [
   { key: "rpm", label: "RPM", color: "#f97316", unit: "RPM" },
-  { key: "torque", label: "Torque", color: "#10b981", unit: "Nm" },
+  { key: "torque", label: "Torsi", color: "#10b981", unit: "Nm" },
   { key: "maf", label: "MAF", color: "#0ea5e9", unit: "g/s" },
-  { key: "temperature", label: "Temp", color: "#facc15", unit: "°C" },
-  { key: "fuelConsumption", label: "Fuel", color: "#a855f7", unit: "L/h" },
+  { key: "temperature", label: "Suhu", color: "#facc15", unit: "°C" },
+  { key: "fuelConsumption", label: "Konsumsi BBM", color: "#a855f7", unit: "L/h" },
 ];
 
 const DEFAULT_VISIBLE = METRICS.map((metric) => metric.key);
@@ -123,7 +123,7 @@ export default function SensorChart({ data, isLoading, error, selectedRange, onR
               className={`flex items-center gap-1 rounded-md px-3 py-1 font-semibold transition ${activeRange === "custom" ? "bg-[var(--accent)] text-white" : "text-[var(--text-muted)] hover:bg-[var(--accent-soft)]"}`}
             >
               <Calendar className="h-3 w-3" />
-              Custom
+              Kustom
             </button>
           </div>
 

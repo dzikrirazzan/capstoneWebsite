@@ -72,7 +72,7 @@ export default function HistoryFilters({
             className="inline-flex items-center justify-center gap-2 rounded-lg border border-transparent bg-[var(--accent-soft)] px-4 py-2 text-sm font-medium text-[var(--accent)] transition enabled:hover:bg-[var(--accent)] enabled:hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
           >
             <Download className="h-4 w-4" />
-            {isExporting ? "Exporting..." : "Export CSV"}
+            {isExporting ? "Mengekspor..." : "Ekspor CSV"}
           </button>
           <button
             onClick={openDeleteModal}
@@ -80,7 +80,7 @@ export default function HistoryFilters({
             className="inline-flex items-center justify-center gap-2 rounded-lg border border-transparent bg-[rgba(239,68,68,0.12)] px-4 py-2 text-sm font-medium text-[#ef4444] transition enabled:hover:bg-[#ef4444] enabled:hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
           >
             <Trash2 className="h-4 w-4" />
-            {isResetting ? "Deleting..." : "Hapus Data"}
+            {isResetting ? "Menghapus..." : "Hapus Data"}
           </button>
         </div>
       </div>
@@ -185,14 +185,14 @@ export default function HistoryFilters({
                 className="inline-flex items-center justify-center gap-2 rounded-lg border border-transparent bg-[rgba(239,68,68,0.12)] px-4 py-2 text-sm font-medium text-[#ef4444] transition enabled:hover:bg-[#ef4444] enabled:hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
               >
                 <Trash2 className="h-4 w-4" />
-                {isResetting ? "Deleting..." : "Delete by Range"}
+                {isResetting ? "Menghapus..." : "Hapus Berdasarkan Rentang"}
               </button>
               <button
                 onClick={submitDeleteAll}
                 disabled={isResetting}
                 className="inline-flex items-center justify-center gap-2 rounded-lg border border-transparent bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white transition enabled:hover:bg-[var(--accent-strong)] disabled:cursor-not-allowed disabled:opacity-60"
               >
-                {isResetting ? "Deleting..." : "Delete All"}
+                {isResetting ? "Menghapus..." : "Hapus Semua"}
               </button>
             </div>
           </div>

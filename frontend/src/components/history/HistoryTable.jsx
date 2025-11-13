@@ -7,9 +7,9 @@ export default function HistoryTable({ data }) {
         <thead>
           <tr className="bg-[var(--bg-muted)] text-left text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">
             <th className="px-4 py-3">Waktu</th>
-            <th className="px-4 py-3">Putaran Mesin</th>
+            <th className="px-4 py-3">RPM</th>
             <th className="px-4 py-3">Torsi</th>
-            <th className="px-4 py-3">Aliran Udara</th>
+            <th className="px-4 py-3">MAF</th>
             <th className="px-4 py-3">Suhu</th>
             <th className="px-4 py-3">Konsumsi BBM</th>
           </tr>

@@ -11,7 +11,7 @@ const RANGE_OPTIONS = [
 
 const CURRENT_METRICS = [
   {
-    label: "Putaran Mesin",
+    label: "RPM",
     colorClass: "text-[#f97316]",
     icon: Gauge,
     key: "rpm",
@@ -27,7 +27,7 @@ const CURRENT_METRICS = [
     format: (value) => `${formatNumber(value, 1)} Nm`,
   },
   {
-    label: "Aliran Udara",
+    label: "MAF",
     colorClass: "text-[#8b5cf6]",
     icon: TrendingUp,
     key: "maf",
@@ -53,9 +53,9 @@ const CURRENT_METRICS = [
 ];
 
 const AGGREGATE_METRICS = [
-  { key: "rpm", label: "Putaran Mesin", unit: "RPM", decimals: 0 },
+  { key: "rpm", label: "RPM", unit: "RPM", decimals: 0 },
   { key: "torque", label: "Torsi", unit: "Nm", decimals: 1 },
-  { key: "maf", label: "Aliran Udara", unit: "g/s", decimals: 1 },
+  { key: "maf", label: "MAF", unit: "g/s", decimals: 1 },
   { key: "temperature", label: "Suhu", unit: "°C", decimals: 1 },
   { key: "fuelConsumption", label: "Konsumsi BBM", unit: "L/h", decimals: 2 },
 ];
@@ -73,7 +73,7 @@ export default function StatsPanel({ sensorData, stats, statsError, statsRange, 
         value: sensorData ? format(sensorData[key]) : "—",
       })),
       {
-        label: "Last Update",
+        label: "Pembaruan Terakhir",
         colorClass: "text-[var(--text-muted)]",
         icon: Clock,
         value: lastUpdate,

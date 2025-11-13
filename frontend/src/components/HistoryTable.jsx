@@ -31,7 +31,7 @@ export default function HistoryTable({ data, pagination, isLoading, error, onPag
 
               <dl className="mt-4 grid grid-cols-2 gap-3 text-sm text-[var(--text-muted)] md:grid-cols-4">
                 <div>
-                  <dt className="text-xs uppercase tracking-wide text-[var(--text-muted)]">Putaran Mesin</dt>
+                  <dt className="text-xs uppercase tracking-wide text-[var(--text-muted)]">RPM</dt>
                   <dd className="text-base font-semibold text-[var(--text-secondary)]">{formatNumber(item.rpm, 0)}</dd>
                 </div>
                 <div>
@@ -39,7 +39,7 @@ export default function HistoryTable({ data, pagination, isLoading, error, onPag
                   <dd className="text-[var(--text-secondary)]">{formatNumber(item.torque, 1)} Nm</dd>
                 </div>
                 <div>
-                  <dt className="text-xs uppercase tracking-wide text-[var(--text-muted)]">Aliran Udara</dt>
+                  <dt className="text-xs uppercase tracking-wide text-[var(--text-muted)]">MAF</dt>
                   <dd className="text-[var(--text-secondary)]">{formatNumber(item.maf, 1)} g/s</dd>
                 </div>
                 <div>

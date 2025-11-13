@@ -632,7 +632,7 @@ function AnalyticsPage({ theme, onToggleTheme }) {
               <div className="flex flex-wrap gap-4 text-sm">
                 <div className="flex items-center gap-2">
                   <span className="text-[var(--text-muted)]">Total Data:</span>
-                  <span className="font-semibold text-[var(--text-primary)]">{period1Data.length} record</span>
+                  <span className="font-semibold text-[var(--text-primary)]">{period1Data.length} data</span>
                 </div>
                 {period1Data.length > 0 && (
                   <>
@@ -692,23 +692,23 @@ function AnalyticsPage({ theme, onToggleTheme }) {
               {/* Metrics */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="p-4 rounded-lg border border-[var(--border-color)] bg-[var(--bg-card)]">
-                  <p className="text-xs text-[var(--text-muted)] mb-1">Avg Temp</p>
+                  <p className="text-xs text-[var(--text-muted)] mb-1">Rata-rata Suhu</p>
                   <p className="text-2xl font-bold text-[var(--text-secondary)]">{healthScore.metrics.avgTemp}°C</p>
                 </div>
                 <div className="p-4 rounded-lg border border-[var(--border-color)] bg-[var(--bg-card)]">
-                  <p className="text-xs text-[var(--text-muted)] mb-1">Max Temp</p>
+                  <p className="text-xs text-[var(--text-muted)] mb-1">Suhu Maks</p>
                   <p className="text-2xl font-bold text-[var(--text-secondary)]">{healthScore.metrics.maxTemp}°C</p>
                 </div>
                 <div className="p-4 rounded-lg border border-[var(--border-color)] bg-[var(--bg-card)]">
-                  <p className="text-xs text-[var(--text-muted)] mb-1">Avg RPM</p>
+                  <p className="text-xs text-[var(--text-muted)] mb-1">Rata-rata RPM</p>
                   <p className="text-2xl font-bold text-[var(--text-secondary)]">{healthScore.metrics.avgRpm}</p>
                 </div>
                 <div className="p-4 rounded-lg border border-[var(--border-color)] bg-[var(--bg-card)]">
-                  <p className="text-xs text-[var(--text-muted)] mb-1">Avg Torque</p>
+                  <p className="text-xs text-[var(--text-muted)] mb-1">Rata-rata Torsi</p>
                   <p className="text-2xl font-bold text-[var(--text-secondary)]">{healthScore.metrics.avgTorque} Nm</p>
                 </div>
                 <div className="p-4 rounded-lg border border-[var(--border-color)] bg-[var(--bg-card)]">
-                  <p className="text-xs text-[var(--text-muted)] mb-1">Avg MAF</p>
+                  <p className="text-xs text-[var(--text-muted)] mb-1">Rata-rata MAF</p>
                   <p className="text-2xl font-bold text-[var(--text-secondary)]">{healthScore.metrics.avgMaf} g/s</p>
                 </div>
               </div>
