@@ -231,7 +231,7 @@ export default async function handler(req, res) {
 
       // ===== SHEET 1: Sensor Data =====
       const dataSheet = workbook.addWorksheet("Sensor Data");
-      
+
       // Title and Date Range Info
       dataSheet.mergeCells("A1:F1");
       dataSheet.getCell("A1").value = "FUELSENSE - SENSOR DATA EXPORT";
@@ -245,13 +245,14 @@ export default async function handler(req, res) {
       dataSheet.getRow(1).height = 25;
 
       // Date Range Info
-      const dateRangeText = startParam && endParam
-        ? `Data Range: ${formatTimestamp(new Date(startParam))} - ${formatTimestamp(new Date(endParam))}`
-        : startParam
-        ? `Data From: ${formatTimestamp(new Date(startParam))}`
-        : endParam
-        ? `Data Until: ${formatTimestamp(new Date(endParam))}`
-        : "Data Range: All Data";
+      const dateRangeText =
+        startParam && endParam
+          ? `Data Range: ${formatTimestamp(new Date(startParam))} - ${formatTimestamp(new Date(endParam))}`
+          : startParam
+          ? `Data From: ${formatTimestamp(new Date(startParam))}`
+          : endParam
+          ? `Data Until: ${formatTimestamp(new Date(endParam))}`
+          : "Data Range: All Data";
 
       dataSheet.mergeCells("A2:F2");
       dataSheet.getCell("A2").value = dateRangeText;
@@ -368,19 +369,19 @@ export default async function handler(req, res) {
 
       // Title
       chartSheet.mergeCells("A1:F1");
-      chartSheet.getCell("A1").value = "SENSOR DATA VISUALIZATION - CHARTS";
+      chartSheet.getCell("A1").value = "SENSOR DATA FOR VISUALIZATION";
       chartSheet.getCell("A1").font = { bold: true, size: 14, color: { argb: "FFFFFFFF" } };
       chartSheet.getCell("A1").fill = {
         type: "pattern",
         pattern: "solid",
-        fgColor: { argb: "FF4472C4" },
+        fgColor: { argb: "#F97316" },
       };
       chartSheet.getCell("A1").alignment = { horizontal: "center", vertical: "middle" };
       chartSheet.getRow(1).height = 25;
 
       // Instructions
       chartSheet.mergeCells("A2:F2");
-      chartSheet.getCell("A2").value = "📊 Data below is formatted for automatic chart generation in Excel";
+      chartSheet.getCell("A2").value = "📊 Use this data to create charts in Excel (Insert → Chart → Line/Column)";
       chartSheet.getCell("A2").font = { size: 10, italic: true, color: { argb: "FF666666" } };
       chartSheet.getCell("A2").alignment = { horizontal: "center" };
 
@@ -392,164 +393,35 @@ export default async function handler(req, res) {
       const step = Math.ceil(data.length / maxDataPoints);
       const sampledData = data.filter((_, index) => index % step === 0 || index === data.length - 1);
 
-      // Chart 1: RPM & Temperature
-      chartSheet.getCell("A4").value = "CHART 1: RPM & TEMPERATURE TREND";
-      chartSheet.getCell("A4").font = { bold: true, size: 12 };
-      chartSheet.mergeCells("A4:C4");
-
-      chartSheet.getCell("A5").value = "Index";
-      chartSheet.getCell("B5").value = "RPM";
-      chartSheet.getCell("C5").value = "Temperature (°C)";
-      chartSheet.getRow(5).font = { bold: true };
-      chartSheet.getRow(5).fill = {
+      // Data table header
+      chartSheet.getCell("A4").value = "Index";
+      chartSheet.getCell("B4").value = "RPM";
+      chartSheet.getCell("C4").value = "Temperature (°C)";
+      chartSheet.getCell("D4").value = "Torque (Nm)";
+      chartSheet.getCell("E4").value = "Fuel (L/h)";
+      chartSheet.getCell("F4").value = "MAF (g/s)";
+      
+      chartSheet.getRow(4).font = { bold: true, color: { argb: "FFFFFFFF" } };
+      chartSheet.getRow(4).fill = {
         type: "pattern",
         pattern: "solid",
-        fgColor: { argb: "FFE7E6E6" },
+        fgColor: { argb: "#EA580C" },
       };
+      chartSheet.getRow(4).alignment = { horizontal: "center", vertical: "middle" };
+      chartSheet.getRow(4).height = 22;
 
+      // Add sampled data for visualization
       sampledData.forEach((row, index) => {
-        chartSheet.addRow([index + 1, row.rpm, row.temperature]);
-      });
-
-      const rpm_temp_lastRow = 5 + sampledData.length;
-
-      // Chart 2: Torque & Fuel Consumption  
-      const chart2StartRow = rpm_temp_lastRow + 3;
-      chartSheet.getCell(`A${chart2StartRow}`).value = "CHART 2: TORQUE & FUEL CONSUMPTION";
-      chartSheet.getCell(`A${chart2StartRow}`).font = { bold: true, size: 12 };
-      chartSheet.mergeCells(`A${chart2StartRow}:C${chart2StartRow}`);
-
-      const chart2HeaderRow = chart2StartRow + 1;
-      chartSheet.getCell(`A${chart2HeaderRow}`).value = "Index";
-      chartSheet.getCell(`B${chart2HeaderRow}`).value = "Torque (Nm)";
-      chartSheet.getCell(`C${chart2HeaderRow}`).value = "Fuel (L/h)";
-      chartSheet.getRow(chart2HeaderRow).font = { bold: true };
-      chartSheet.getRow(chart2HeaderRow).fill = {
-        type: "pattern",
-        pattern: "solid",
-        fgColor: { argb: "FFE7E6E6" },
-      };
-
-      sampledData.forEach((row, index) => {
-        chartSheet.addRow([index + 1, row.torque, row.fuelConsumption]);
-      });
-
-      const torque_fuel_lastRow = chart2HeaderRow + sampledData.length;
-
-      // Chart 3: MAF (Mass Air Flow)
-      const chart3StartRow = torque_fuel_lastRow + 3;
-      chartSheet.getCell(`A${chart3StartRow}`).value = "CHART 3: MASS AIR FLOW (MAF)";
-      chartSheet.getCell(`A${chart3StartRow}`).font = { bold: true, size: 12 };
-      chartSheet.mergeCells(`A${chart3StartRow}:B${chart3StartRow}`);
-
-      const chart3HeaderRow = chart3StartRow + 1;
-      chartSheet.getCell(`A${chart3HeaderRow}`).value = "Index";
-      chartSheet.getCell(`B${chart3HeaderRow}`).value = "MAF (g/s)";
-      chartSheet.getRow(chart3HeaderRow).font = { bold: true };
-      chartSheet.getRow(chart3HeaderRow).fill = {
-        type: "pattern",
-        pattern: "solid",
-        fgColor: { argb: "FFE7E6E6" },
-      };
-
-      sampledData.forEach((row, index) => {
-        chartSheet.addRow([index + 1, row.maf]);
-      });
-
-      // Add Excel Charts using ExcelJS chart feature
-      // Chart 1: RPM & Temperature Line Chart
-      chartSheet.addChart({
-        name: "RPM & Temperature",
-        type: "line",
-        anchor: {
-          from: { col: 4, row: 3 },
-          to: { col: 10, row: 18 },
-        },
-        series: [
-          {
-            title: "RPM",
-            categories: `'Charts & Visualization'!$A$6:$A$${rpm_temp_lastRow}`,
-            values: `'Charts & Visualization'!$B$6:$B$${rpm_temp_lastRow}`,
-          },
-          {
-            title: "Temperature (°C)",
-            categories: `'Charts & Visualization'!$A$6:$A$${rpm_temp_lastRow}`,
-            values: `'Charts & Visualization'!$C$6:$C$${rpm_temp_lastRow}`,
-          },
-        ],
-        title: {
-          text: "RPM & Temperature Over Time",
-        },
-        xAxis: {
-          title: "Data Point",
-        },
-        yAxis: {
-          title: "Value",
-        },
-      });
-
-      // Chart 2: Torque & Fuel Line Chart
-      chartSheet.addChart({
-        name: "Torque & Fuel",
-        type: "line",
-        anchor: {
-          from: { col: 4, row: chart2StartRow - 1 },
-          to: { col: 10, row: chart2StartRow + 14 },
-        },
-        series: [
-          {
-            title: "Torque (Nm)",
-            categories: `'Charts & Visualization'!$A$${chart2HeaderRow + 1}:$A$${torque_fuel_lastRow}`,
-            values: `'Charts & Visualization'!$B$${chart2HeaderRow + 1}:$B$${torque_fuel_lastRow}`,
-          },
-          {
-            title: "Fuel Consumption (L/h)",
-            categories: `'Charts & Visualization'!$A$${chart2HeaderRow + 1}:$A$${torque_fuel_lastRow}`,
-            values: `'Charts & Visualization'!$C$${chart2HeaderRow + 1}:$C$${torque_fuel_lastRow}`,
-          },
-        ],
-        title: {
-          text: "Torque & Fuel Consumption Over Time",
-        },
-        xAxis: {
-          title: "Data Point",
-        },
-        yAxis: {
-          title: "Value",
-        },
-      });
-
-      // Chart 3: MAF Line Chart
-      const maf_lastRow = chart3HeaderRow + sampledData.length;
-      chartSheet.addChart({
-        name: "MAF",
-        type: "line",
-        anchor: {
-          from: { col: 4, row: chart3StartRow - 1 },
-          to: { col: 10, row: chart3StartRow + 14 },
-        },
-        series: [
-          {
-            title: "MAF (g/s)",
-            categories: `'Charts & Visualization'!$A$${chart3HeaderRow + 1}:$A$${maf_lastRow}`,
-            values: `'Charts & Visualization'!$B$${chart3HeaderRow + 1}:$B$${maf_lastRow}`,
-          },
-        ],
-        title: {
-          text: "Mass Air Flow (MAF) Over Time",
-        },
-        xAxis: {
-          title: "Data Point",
-        },
-        yAxis: {
-          title: "MAF (g/s)",
-        },
+        chartSheet.addRow([index + 1, row.rpm, row.temperature, row.torque, row.fuelConsumption, row.maf]);
       });
 
       // Set column widths for better readability
       chartSheet.getColumn(1).width = 10;
-      chartSheet.getColumn(2).width = 15;
+      chartSheet.getColumn(2).width = 12;
       chartSheet.getColumn(3).width = 18;
+      chartSheet.getColumn(4).width = 15;
+      chartSheet.getColumn(5).width = 15;
+      chartSheet.getColumn(6).width = 12;
 
       // Generate filename
       const fileTimestamp = formatTimestamp(now).replace(/[: ]/g, "").replace(/-/g, "");

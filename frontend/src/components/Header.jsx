@@ -14,8 +14,8 @@ export default function Header({ theme, onToggleTheme }) {
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 px-4 py-4 md:flex-row md:items-center md:justify-between">
         <div className="flex items-center justify-between gap-3 md:justify-start">
           <div className="flex items-center gap-3">
-            <div className="rounded-xl bg-[var(--accent-soft)] p-2">
-              <Activity className="h-6 w-6 text-[var(--accent)]" />
+            <div className="rounded-xl bg-gradient-to-br from-[#F97316] to-[#EA580C] p-2 shadow-lg">
+              <img src="/favicon.svg" alt="EMSys Logo" className="h-6 w-6" />
             </div>
             <div>
               <h1 className="text-lg font-semibold text-[var(--text-primary)] md:text-xl">EMSys - Engine Monitoring System</h1>
