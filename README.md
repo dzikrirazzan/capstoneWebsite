@@ -145,17 +145,6 @@ The application will be available at:
 - Frontend: http://localhost:5173
 - Backend: http://localhost:5000
 
-## Deployment
-
-### Vercel Deployment
-
-1. Connect your GitHub repository to Vercel
-2. Configure environment variables in Vercel dashboard
-3. Deploy automatically on push to main branch
-
-### Environment Variables (Production)
-- `DATABASE_URL` - PostgreSQL connection string
-
 ## Development
 
 ### Frontend Development
