@@ -110,7 +110,7 @@ router.get("/sensor-data", async (req, res) => {
     const startDate = parseDate(req.query.start);
     const endDate = parseDate(req.query.end);
 
-    const where = buildTimestampFilter(startDate, endDate);
+    const where = buildTimestampFilter(startDate, endDate) || undefined;
 
     const [data, total] = await Promise.all([
       prisma.sensorData.findMany({
@@ -188,8 +188,10 @@ router.get("/sensor-data/stats", async (req, res) => {
       timeRange = "custom";
     }
 
+    const whereClause = buildTimestampFilter(startTime, endTime);
+
     const data = await prisma.sensorData.findMany({
-      where: buildTimestampFilter(startTime, endTime),
+      where: whereClause ? whereClause : undefined,
     });
 
     if (data.length === 0) {
@@ -255,8 +257,10 @@ router.get("/sensor-data/series", async (req, res) => {
     const endDate = parseDate(req.query.end);
     const limit = Math.min(parseIntQuery(req.query.limit, 200), 1000);
 
+    const whereClause = buildTimestampFilter(startDate, endDate);
+
     const data = await prisma.sensorData.findMany({
-      where: buildTimestampFilter(startDate, endDate),
+      where: whereClause ? whereClause : undefined,
       orderBy: { timestamp: "asc" },
       take: limit,
     });
@@ -274,8 +278,10 @@ router.get("/sensor-data/export", async (req, res) => {
     const startDate = parseDate(req.query.start);
     const endDate = parseDate(req.query.end);
 
+    const whereClause = buildTimestampFilter(startDate, endDate);
+
     const data = await prisma.sensorData.findMany({
-      where: buildTimestampFilter(startDate, endDate),
+      where: whereClause ? whereClause : undefined,
       orderBy: { timestamp: "asc" },
     });
 
@@ -467,7 +473,7 @@ router.delete("/sensor-data", async (req, res) => {
     const startDate = parseDate(req.query.start);
     const endDate = parseDate(req.query.end);
 
-    const where = buildTimestampFilter(startDate, endDate);
+    const where = buildTimestampFilter(startDate, endDate) || undefined;
 
     const result = await prisma.sensorData.deleteMany({
       where,
