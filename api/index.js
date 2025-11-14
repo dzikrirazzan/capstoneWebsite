@@ -28,6 +28,65 @@ export default async function handler(req, res) {
       });
     }
 
+    // POST: Create new sensor data
+    if (method === "POST" && path === "/api/sensor-data") {
+      const { timestamp, rpm, torque, maf, temperature, fuelConsumption, customSensor, alertStatus } = req.body || {};
+
+      // Helper function to parse numeric values
+      const parseNumeric = (value) => {
+        if (value === null || value === undefined || value === "") return undefined;
+        const num = typeof value === "number" ? value : parseFloat(value);
+        return !isNaN(num) ? num : undefined;
+      };
+
+      const parsed = {
+        rpm: parseNumeric(rpm),
+        torque: parseNumeric(torque),
+        maf: parseNumeric(maf),
+        temperature: parseNumeric(temperature),
+        fuelConsumption: parseNumeric(fuelConsumption),
+        customSensor: parseNumeric(customSensor),
+      };
+
+      const requiredKeys = ["rpm", "torque", "maf", "temperature", "fuelConsumption"];
+      const missing = requiredKeys.filter((key) => typeof parsed[key] !== "number");
+
+      if (missing.length) {
+        return res.status(400).json({
+          error: "Invalid payload",
+          details: `Missing or invalid fields: ${missing.join(", ")}`,
+        });
+      }
+
+      // Validate timestamp
+      let parsedTimestamp = null;
+      if (timestamp) {
+        const ts = new Date(timestamp);
+        if (!isNaN(ts.getTime())) {
+          parsedTimestamp = ts;
+        } else {
+          return res.status(400).json({ error: "Invalid timestamp value" });
+        }
+      }
+
+      const data = {
+        rpm: parsed.rpm,
+        torque: parsed.torque,
+        maf: parsed.maf,
+        temperature: parsed.temperature,
+        fuelConsumption: parsed.fuelConsumption,
+        customSensor: typeof parsed.customSensor === "number" ? parsed.customSensor : null,
+        alertStatus: typeof alertStatus === "boolean" ? alertStatus : parsed.rpm >= 5000,
+      };
+
+      if (parsedTimestamp) {
+        data.timestamp = parsedTimestamp;
+      }
+
+      const savedData = await prisma.sensorData.create({ data });
+      return res.status(201).json(savedData);
+    }
+
     // Get latest sensor data
     if (path === "/api/sensor-data/latest" || path.startsWith("/api/sensor-data/latest")) {
       const latest = await prisma.sensorData.findFirst({
