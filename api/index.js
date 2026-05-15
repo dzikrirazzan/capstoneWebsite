@@ -11,7 +11,7 @@ export default async function handler(req, res) {
 
   // CORS headers
   res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
   if (method === "OPTIONS") {
@@ -519,6 +519,100 @@ export default async function handler(req, res) {
           total: total,
           totalPages: Math.ceil(total / limit),
         },
+      });
+    }
+
+    // POST: Generate dummy data for testing
+    if (method === "POST" && (path === "/api/dummy-data" || path.startsWith("/api/dummy-data"))) {
+      // Generate 50 realistic engine sensor data records spread over the last 24 hours
+      const now = new Date();
+      const records = [];
+      const totalRecords = 50;
+
+      for (let i = 0; i < totalRecords; i++) {
+        // Spread records over the last 24 hours
+        const minutesAgo = ((totalRecords - i) / totalRecords) * 24 * 60;
+        const timestamp = new Date(now.getTime() - minutesAgo * 60 * 1000);
+
+        // Simulate realistic engine patterns
+        const phase = i / totalRecords; // 0 to 1
+        const isHighLoad = phase > 0.3 && phase < 0.7;
+        const isIdling = phase < 0.1 || phase > 0.9;
+
+        // RPM: idle ~800-1000, normal ~1500-3500, high load ~3000-5000
+        let baseRpm = isIdling ? 850 : isHighLoad ? 3500 : 2200;
+        const rpm = baseRpm + (Math.random() - 0.5) * (isHighLoad ? 1500 : 800);
+
+        // Torque: correlated with RPM, 50-350 Nm
+        const torque = (rpm / 5500) * 280 + (Math.random() - 0.5) * 40;
+
+        // MAF: correlated with RPM, 5-80 g/s
+        const maf = (rpm / 6000) * 65 + (Math.random() - 0.5) * 10;
+
+        // Temperature: gradually increases, 70-95°C normal
+        const tempBase = 72 + phase * 18;
+        const temperature = tempBase + (Math.random() - 0.5) * 6;
+
+        // Fuel consumption: correlated with RPM, 3-15 L/h
+        const fuelConsumption = (rpm / 5500) * 12 + (Math.random() - 0.5) * 2;
+
+        records.push({
+          timestamp,
+          rpm: Math.max(600, Math.round(rpm * 10) / 10),
+          torque: Math.max(30, Math.round(torque * 100) / 100),
+          maf: Math.max(3, Math.round(maf * 10) / 10),
+          temperature: Math.max(60, Math.round(temperature * 10) / 10),
+          fuelConsumption: Math.max(1, Math.round(fuelConsumption * 100) / 100),
+          customSensor: -999, // Marker to identify dummy data
+          alertStatus: false,
+        });
+      }
+
+      // Insert all records
+      const result = await prisma.sensorData.createMany({ data: records });
+
+      return res.status(201).json({
+        message: `Successfully created ${result.count} dummy data records`,
+        count: result.count,
+        marker: "customSensor = -999",
+      });
+    }
+
+    // DELETE: Remove dummy data
+    if (method === "DELETE" && (path === "/api/dummy-data" || path.startsWith("/api/dummy-data"))) {
+      const result = await prisma.sensorData.deleteMany({
+        where: { customSensor: -999 },
+      });
+
+      return res.status(200).json({
+        message: `Successfully deleted ${result.count} dummy data records`,
+        count: result.count,
+      });
+    }
+
+    // DELETE: Remove sensor data (existing functionality)
+    if (method === "DELETE" && path === "/api/sensor-data") {
+      const urlObj = new URL(req.url, `http://${req.headers.host}`);
+      const startParam = urlObj.searchParams.get("start");
+      const endParam = urlObj.searchParams.get("end");
+
+      let where = undefined;
+
+      if (startParam || endParam) {
+        where = {};
+        if (startParam) {
+          where.timestamp = { ...where.timestamp, gte: new Date(startParam) };
+        }
+        if (endParam) {
+          where.timestamp = { ...where.timestamp, lte: new Date(endParam) };
+        }
+      }
+
+      const result = await prisma.sensorData.deleteMany({ where });
+
+      return res.status(200).json({
+        message: `Deleted ${result.count} records`,
+        count: result.count,
       });
     }
 
