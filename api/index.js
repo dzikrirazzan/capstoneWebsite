@@ -3,6 +3,40 @@ import ExcelJS from "exceljs";
 
 const prisma = new PrismaClient();
 
+const parseDateParam = (value, fieldName) => {
+  if (!value) return null;
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    const error = new Error(`Invalid ${fieldName} date`);
+    error.statusCode = 400;
+    throw error;
+  }
+
+  return date;
+};
+
+const buildTimestampFilter = (startParam, endParam) => {
+  const startTime = parseDateParam(startParam, "start");
+  const endTime = parseDateParam(endParam, "end");
+
+  if (startTime && endTime && startTime > endTime) {
+    const error = new Error("Start date must be before end date");
+    error.statusCode = 400;
+    throw error;
+  }
+
+  const timestamp = {};
+  if (startTime) timestamp.gte = startTime;
+  if (endTime) timestamp.lte = endTime;
+
+  return {
+    where: startTime || endTime ? { timestamp } : undefined,
+    startTime,
+    endTime,
+  };
+};
+
 export default async function handler(req, res) {
   const { method, url } = req;
 
@@ -124,15 +158,10 @@ export default async function handler(req, res) {
 
       // Handle custom date range
       if (startParam || endParam) {
-        where = {};
-        if (startParam) {
-          startTime = new Date(startParam);
-          where.timestamp = { ...where.timestamp, gte: startTime };
-        }
-        if (endParam) {
-          endTime = new Date(endParam);
-          where.timestamp = { ...where.timestamp, lte: endTime };
-        }
+        const filter = buildTimestampFilter(startParam, endParam);
+        where = filter.where;
+        startTime = filter.startTime;
+        endTime = filter.endTime;
       } else if (range !== "all") {
         // Handle predefined ranges
         const now = new Date();
@@ -198,17 +227,7 @@ export default async function handler(req, res) {
       const startParam = urlObj.searchParams.get("start");
       const endParam = urlObj.searchParams.get("end");
 
-      let where = undefined;
-
-      if (startParam || endParam) {
-        where = {};
-        if (startParam) {
-          where.timestamp = { ...where.timestamp, gte: new Date(startParam) };
-        }
-        if (endParam) {
-          where.timestamp = { ...where.timestamp, lte: new Date(endParam) };
-        }
-      }
+      const { where } = buildTimestampFilter(startParam, endParam);
 
       const data = await prisma.sensorData.findMany({
         where: where,
@@ -225,17 +244,7 @@ export default async function handler(req, res) {
       const startParam = urlObj.searchParams.get("start");
       const endParam = urlObj.searchParams.get("end");
 
-      let where = undefined;
-
-      if (startParam || endParam) {
-        where = {};
-        if (startParam) {
-          where.timestamp = { ...where.timestamp, gte: new Date(startParam) };
-        }
-        if (endParam) {
-          where.timestamp = { ...where.timestamp, lte: new Date(endParam) };
-        }
-      }
+      const { where } = buildTimestampFilter(startParam, endParam);
 
       const data = await prisma.sensorData.findMany({
         where: where,
@@ -433,7 +442,7 @@ export default async function handler(req, res) {
       chartSheet.getCell("A1").fill = {
         type: "pattern",
         pattern: "solid",
-        fgColor: { argb: "#F97316" },
+        fgColor: { argb: "FFF97316" },
       };
       chartSheet.getCell("A1").alignment = { horizontal: "center", vertical: "middle" };
       chartSheet.getRow(1).height = 25;
@@ -464,7 +473,7 @@ export default async function handler(req, res) {
       chartSheet.getRow(4).fill = {
         type: "pattern",
         pattern: "solid",
-        fgColor: { argb: "#EA580C" },
+        fgColor: { argb: "FFEA580C" },
       };
       chartSheet.getRow(4).alignment = { horizontal: "center", vertical: "middle" };
       chartSheet.getRow(4).height = 22;
@@ -500,15 +509,19 @@ export default async function handler(req, res) {
       const urlObj = new URL(req.url, `http://${req.headers.host}`);
       const page = parseInt(urlObj.searchParams.get("page") || "1", 10);
       const limit = parseInt(urlObj.searchParams.get("limit") || "100", 10);
+      const startParam = urlObj.searchParams.get("start");
+      const endParam = urlObj.searchParams.get("end");
+      const { where } = buildTimestampFilter(startParam, endParam);
       const skip = (page - 1) * limit;
 
       const [data, total] = await Promise.all([
         prisma.sensorData.findMany({
+          where,
           orderBy: { timestamp: "desc" },
           take: limit,
           skip: skip,
         }),
-        prisma.sensorData.count(),
+        prisma.sensorData.count({ where }),
       ]);
 
       return res.status(200).json({
@@ -596,17 +609,7 @@ export default async function handler(req, res) {
       const startParam = urlObj.searchParams.get("start");
       const endParam = urlObj.searchParams.get("end");
 
-      let where = undefined;
-
-      if (startParam || endParam) {
-        where = {};
-        if (startParam) {
-          where.timestamp = { ...where.timestamp, gte: new Date(startParam) };
-        }
-        if (endParam) {
-          where.timestamp = { ...where.timestamp, lte: new Date(endParam) };
-        }
-      }
+      const { where } = buildTimestampFilter(startParam, endParam);
 
       const result = await prisma.sensorData.deleteMany({ where });
 
@@ -620,8 +623,8 @@ export default async function handler(req, res) {
     return res.status(404).json({ error: "Not found", path });
   } catch (error) {
     console.error("API Error:", error);
-    return res.status(500).json({
-      error: "Internal server error",
+    return res.status(error.statusCode || 500).json({
+      error: error.statusCode ? "Bad request" : "Internal server error",
       message: error.message,
     });
   } finally {
