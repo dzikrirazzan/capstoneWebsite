@@ -1,7 +1,17 @@
 import { PrismaClient } from "@prisma/client";
 import ExcelJS from "exceljs";
 
-const prisma = new PrismaClient();
+const globalForPrisma = globalThis;
+
+const prisma =
+  globalForPrisma.prisma ||
+  new PrismaClient({
+    log: process.env.NODE_ENV === "development" ? ["query", "error", "warn"] : ["error"],
+  });
+
+if (process.env.NODE_ENV !== "production") {
+  globalForPrisma.prisma = prisma;
+}
 
 const parseDateParam = (value, fieldName) => {
   if (!value) return null;
@@ -627,7 +637,5 @@ export default async function handler(req, res) {
       error: error.statusCode ? "Bad request" : "Internal server error",
       message: error.message,
     });
-  } finally {
-    await prisma.$disconnect();
   }
 }
