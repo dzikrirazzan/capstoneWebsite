@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import { formatDate, formatNumber } from "../lib/utils.js";
-import { ChartLine, AlertCircle, Calendar } from "lucide-react";
+import { ChartLine, AlertCircle, Calendar, Download } from "lucide-react";
 
 const METRICS = [
   { key: "rpm", label: "RPM", color: "#f97316", unit: "RPM" },
@@ -20,7 +20,19 @@ const RANGE_OPTIONS = [
   { label: "Semua Data", value: "all" },
 ];
 
-export default function SensorChart({ data, isLoading, error, selectedRange, onRangeChange, onCustomDateChange, customStartDate, customEndDate }) {
+export default function SensorChart({
+  data,
+  isLoading,
+  error,
+  selectedRange,
+  onRangeChange,
+  onCustomDateChange,
+  customStartDate,
+  customEndDate,
+  canExportData = false,
+  onExportData,
+  isExporting = false,
+}) {
   const [visibleMetrics, setVisibleMetrics] = useState(DEFAULT_VISIBLE);
   const [viewMode, setViewMode] = useState("combined");
   const [singleMetric, setSingleMetric] = useState(METRICS[0].key);
@@ -141,6 +153,17 @@ export default function SensorChart({ data, isLoading, error, selectedRange, onR
               Satu Metrik
             </button>
           </div>
+
+          {canExportData && onExportData && (
+            <button
+              onClick={onExportData}
+              disabled={isExporting}
+              className="inline-flex items-center justify-center gap-2 rounded-lg bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[var(--accent-strong)] disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              <Download className="h-4 w-4" />
+              {isExporting ? "Mengekspor..." : "Ekspor Data"}
+            </button>
+          )}
 
           {viewMode === "single" && (
             <select

@@ -40,9 +40,12 @@ export default function Dashboard({
             onCustomDateChange={onCustomDateChange}
             customStartDate={customStartDate}
             customEndDate={customEndDate}
+            canExportData={canExportData}
+            onExportData={onExportData}
+            isExporting={isExportingData}
           />
 
-          <SummaryCards summaryCounts={summaryCounts} canExportData={canExportData} onExportData={onExportData} isExporting={isExportingData} />
+          <SummaryCards summaryCounts={summaryCounts} />
 
           <StatsPanel sensorData={sensorData} stats={stats} statsError={statsError} statsRange={statsRange} onRangeChange={onStatsRangeChange} isLoading={statsLoading} />
         </section>

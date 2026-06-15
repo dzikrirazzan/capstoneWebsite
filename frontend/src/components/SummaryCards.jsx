@@ -1,7 +1,7 @@
-import { ArrowUpRight, Download } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
 import { Link } from "react-router-dom";
 
-export default function SummaryCards({ summaryCounts, canExportData = true, onExportData, isExporting = false }) {
+export default function SummaryCards({ summaryCounts }) {
   const cards = [
     {
       label: "Total Data",
@@ -21,39 +21,24 @@ export default function SummaryCards({ summaryCounts, canExportData = true, onEx
   ];
 
   return (
-    <div className="space-y-4">
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-        {cards.map((card) => {
-          const value = Number(card.value ?? 0);
-          const formattedValue = Number.isNaN(value) ? "0" : value.toLocaleString("id-ID");
-          return (
-            <div key={card.label} className="flex flex-col justify-between gap-3 rounded-xl border border-[var(--border-color)] bg-[var(--bg-card)] p-5 shadow-sm">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">{card.label}</p>
-                <p className="mt-2 text-3xl font-semibold text-[var(--text-primary)]">{formattedValue}</p>
-                <p className="mt-1 text-sm text-[var(--text-muted)]">{card.description}</p>
-              </div>
-              <Link to="/history" className="inline-flex items-center gap-2 text-sm font-semibold text-[var(--accent)] transition hover:text-[var(--accent-strong)]">
-                Lihat Riwayat
-                <ArrowUpRight className="h-4 w-4" />
-              </Link>
+    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+      {cards.map((card) => {
+        const value = Number(card.value ?? 0);
+        const formattedValue = Number.isNaN(value) ? "0" : value.toLocaleString("id-ID");
+        return (
+          <div key={card.label} className="flex flex-col justify-between gap-3 rounded-xl border border-[var(--border-color)] bg-[var(--bg-card)] p-5 shadow-sm">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">{card.label}</p>
+              <p className="mt-2 text-3xl font-semibold text-[var(--text-primary)]">{formattedValue}</p>
+              <p className="mt-1 text-sm text-[var(--text-muted)]">{card.description}</p>
             </div>
-          );
-        })}
-      </div>
-
-      {canExportData && onExportData && (
-        <div className="flex justify-end">
-          <button
-            onClick={onExportData}
-            disabled={isExporting}
-            className="inline-flex items-center justify-center gap-2 rounded-lg bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[var(--accent-strong)] disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            <Download className="h-4 w-4" />
-            {isExporting ? "Mengekspor..." : "Ekspor Data"}
-          </button>
-        </div>
-      )}
+            <Link to="/history" className="inline-flex items-center gap-2 text-sm font-semibold text-[var(--accent)] transition hover:text-[var(--accent-strong)]">
+              Lihat Riwayat
+              <ArrowUpRight className="h-4 w-4" />
+            </Link>
+          </div>
+        );
+      })}
     </div>
   );
 }
