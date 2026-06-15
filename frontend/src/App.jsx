@@ -1,9 +1,11 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { Routes, Route } from "react-router-dom";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Navigate, Routes, Route, useLocation } from "react-router-dom";
 import Dashboard from "./components/Dashboard";
 import HistoryPage from "./components/history/HistoryPage";
 import AnalyticsPage from "./components/analytics/AnalyticsPage";
 import DummyDataPanel from "./components/DummyDataPanel";
+import LoginPage from "./components/auth/LoginPage";
+import { authenticateResearcher, clearStoredUser, getPermissionsForRole, getRoleFromUser, persistUser, readStoredUser, ROLES } from "./lib/auth.js";
 
 const METRICS = ["rpm", "torque", "maf", "temperature", "fuelConsumption"];
 
@@ -43,8 +45,20 @@ const toIsoString = (value) => {
   return Number.isNaN(date.getTime()) ? undefined : date.toISOString();
 };
 
+function RequireResearcher({ currentUser, children }) {
+  const location = useLocation();
+  const role = getRoleFromUser(currentUser);
+
+  if (role === ROLES.RESEARCHER) {
+    return children;
+  }
+
+  return <Navigate to="/login" replace state={{ from: location }} />;
+}
+
 function App() {
   const [apiBaseUrl] = useState(resolveApiBaseUrl);
+  const [authUser, setAuthUser] = useState(readStoredUser);
   const [sensorData, setSensorData] = useState(null);
   const [stats, setStats] = useState(null);
   const [statsError, setStatsError] = useState(null);
@@ -79,6 +93,8 @@ function App() {
   const appliedHistoryFiltersRef = useRef(defaultHistoryFilters);
   const latestSeriesRef = useRef([]);
   const latestRecordIdRef = useRef(null);
+  const activeRole = useMemo(() => getRoleFromUser(authUser), [authUser]);
+  const permissions = useMemo(() => getPermissionsForRole(activeRole), [activeRole]);
 
   const computePeriodCounts = useCallback((dataset = []) => {
     const now = Date.now();
@@ -395,49 +411,58 @@ function App() {
     fetchHistory(1, defaultHistoryFilters).catch(() => null);
   }, [fetchHistory]);
 
-  const handleExportHistory = useCallback(async () => {
-    try {
-      setIsExportingHistory(true);
-      const params = new URLSearchParams();
-      const { start, end } = appliedHistoryFiltersRef.current;
-      const startIso = toIsoString(start);
-      const endIso = toIsoString(end);
+  const exportSensorData = useCallback(
+    async (filters = {}) => {
+      try {
+        setIsExportingHistory(true);
+        const params = new URLSearchParams();
+        const startIso = toIsoString(filters.start);
+        const endIso = toIsoString(filters.end);
 
-      if (startIso) params.set("start", startIso);
-      if (endIso) params.set("end", endIso);
+        if (startIso) params.set("start", startIso);
+        if (endIso) params.set("end", endIso);
 
-      const response = await fetch(`${apiBaseUrl}/api/sensor-data/export?${params.toString()}`);
-      if (!response.ok) {
-        throw new Error(`Failed to export data (${response.status})`);
+        const response = await fetch(`${apiBaseUrl}/api/sensor-data/export?${params.toString()}`);
+        if (!response.ok) {
+          throw new Error(`Failed to export data (${response.status})`);
+        }
+
+        const blob = await response.blob();
+        const downloadUrl = window.URL.createObjectURL(blob);
+        const anchor = document.createElement("a");
+        anchor.href = downloadUrl;
+
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, "0");
+        const day = String(now.getDate()).padStart(2, "0");
+        const hours = String(now.getHours()).padStart(2, "0");
+        const minutes = String(now.getMinutes()).padStart(2, "0");
+        const seconds = String(now.getSeconds()).padStart(2, "0");
+        const fileTimestamp = `${year}${month}${day}${hours}${minutes}${seconds}`;
+        anchor.download = `EMSysData_${fileTimestamp}.xlsx`;
+
+        document.body.appendChild(anchor);
+        anchor.click();
+        anchor.remove();
+        window.URL.revokeObjectURL(downloadUrl);
+      } catch (error) {
+        console.error("Failed to export data", error);
+        setHistoryError("Gagal mengekspor data.");
+      } finally {
+        setIsExportingHistory(false);
       }
+    },
+    [apiBaseUrl]
+  );
 
-      const blob = await response.blob();
-      const downloadUrl = window.URL.createObjectURL(blob);
-      const anchor = document.createElement("a");
-      anchor.href = downloadUrl;
+  const handleExportHistory = useCallback(() => {
+    return exportSensorData(appliedHistoryFiltersRef.current);
+  }, [exportSensorData]);
 
-      // Generate filename with timestamp
-      const now = new Date();
-      const year = now.getFullYear();
-      const month = String(now.getMonth() + 1).padStart(2, "0");
-      const day = String(now.getDate()).padStart(2, "0");
-      const hours = String(now.getHours()).padStart(2, "0");
-      const minutes = String(now.getMinutes()).padStart(2, "0");
-      const seconds = String(now.getSeconds()).padStart(2, "0");
-      const fileTimestamp = `${year}${month}${day}${hours}${minutes}${seconds}`;
-      anchor.download = `EMSysData_${fileTimestamp}.xlsx`;
-
-      document.body.appendChild(anchor);
-      anchor.click();
-      anchor.remove();
-      window.URL.revokeObjectURL(downloadUrl);
-    } catch (error) {
-      console.error("Failed to export history", error);
-      setHistoryError("Gagal mengekspor data.");
-    } finally {
-      setIsExportingHistory(false);
-    }
-  }, [apiBaseUrl]);
+  const handleExportAllData = useCallback(() => {
+    return exportSensorData();
+  }, [exportSensorData]);
 
   const handleResetHistoryData = useCallback(
     async (options = "range") => {
@@ -485,6 +510,22 @@ function App() {
     [apiBaseUrl, fetchChartData, fetchHistory, fetchStats, statsRange]
   );
 
+  const handleLogin = useCallback((credentials) => {
+    const result = authenticateResearcher(credentials);
+    if (!result.ok) {
+      return result;
+    }
+
+    persistUser(result.user);
+    setAuthUser(result.user);
+    return result;
+  }, []);
+
+  const handleLogout = useCallback(() => {
+    clearStoredUser();
+    setAuthUser(null);
+  }, []);
+
   const toggleTheme = useCallback(() => {
     setTheme((current) => (current === "dark" ? "light" : "dark"));
   }, []);
@@ -499,6 +540,8 @@ function App() {
               sensorData={sensorData}
               theme={theme}
               onToggleTheme={toggleTheme}
+              currentUser={authUser}
+              onLogout={handleLogout}
               stats={stats}
               statsError={statsError}
               statsRange={statsRange}
@@ -511,34 +554,52 @@ function App() {
               chartLoading={chartLoading}
               chartError={chartError}
               summaryCounts={summaryCounts}
+              canExportData={permissions.canExportData}
+              onExportData={handleExportAllData}
+              isExportingData={isExportingHistory}
             />
           }
         />
         <Route
+          path="/login"
+          element={<LoginPage theme={theme} onToggleTheme={toggleTheme} currentUser={authUser} onLogout={handleLogout} onLogin={handleLogin} />}
+        />
+        <Route
           path="/history"
           element={
-            <HistoryPage
-              theme={theme}
-              onToggleTheme={toggleTheme}
-              history={history}
-              historyLoading={historyLoading}
-              historyError={historyError}
-              historyPagination={historyPagination}
-              onHistoryPageChange={handleHistoryPageChange}
-              historyFilters={historyFilters}
-              onHistoryFiltersChange={handleHistoryFiltersChange}
-              onApplyHistoryFilters={applyHistoryFilters}
-              onResetHistoryFilters={resetHistoryFilters}
-              onExportHistory={handleExportHistory}
-              onResetHistory={handleResetHistoryData}
-              isExportingHistory={isExportingHistory}
-              isResettingHistory={isResettingHistory}
-            />
+            <RequireResearcher currentUser={authUser}>
+              <HistoryPage
+                theme={theme}
+                onToggleTheme={toggleTheme}
+                currentUser={authUser}
+                onLogout={handleLogout}
+                history={history}
+                historyLoading={historyLoading}
+                historyError={historyError}
+                historyPagination={historyPagination}
+                onHistoryPageChange={handleHistoryPageChange}
+                historyFilters={historyFilters}
+                onHistoryFiltersChange={handleHistoryFiltersChange}
+                onApplyHistoryFilters={applyHistoryFilters}
+                onResetHistoryFilters={resetHistoryFilters}
+                onExportHistory={handleExportHistory}
+                onResetHistory={handleResetHistoryData}
+                isExportingHistory={isExportingHistory}
+                isResettingHistory={isResettingHistory}
+              />
+            </RequireResearcher>
           }
         />
-        <Route path="/analytics" element={<AnalyticsPage theme={theme} onToggleTheme={toggleTheme} />} />
+        <Route
+          path="/analytics"
+          element={
+            <RequireResearcher currentUser={authUser}>
+              <AnalyticsPage theme={theme} onToggleTheme={toggleTheme} currentUser={authUser} onLogout={handleLogout} />
+            </RequireResearcher>
+          }
+        />
       </Routes>
-      <DummyDataPanel />
+      {permissions.canManageDummyData && <DummyDataPanel />}
     </div>
   );
 }

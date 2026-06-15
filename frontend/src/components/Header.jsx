@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { Sun, Moon, Menu, X } from "lucide-react";
+import { Sun, Moon, Menu, X, LogIn, LogOut, ShieldCheck, UserRound } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { cn } from "../lib/utils.js";
+import { getRoleFromUser, getRoleLabel, ROLES } from "../lib/auth.js";
 
 const navigation = [
   { label: "Dashboard", href: "/" },
@@ -9,8 +10,34 @@ const navigation = [
   { label: "Riwayat Data", href: "/history" },
 ];
 
-export default function Header({ theme, onToggleTheme }) {
+export default function Header({ theme, onToggleTheme, currentUser, onLogout }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const activeRole = getRoleFromUser(currentUser);
+  const isResearcher = activeRole === ROLES.RESEARCHER;
+  const roleLabel = getRoleLabel(activeRole);
+
+  const authControl = isResearcher ? (
+    <button
+      onClick={onLogout}
+      className="inline-flex items-center justify-center gap-2 rounded-xl border border-[var(--border-color)] bg-[var(--bg-card)] px-3 py-2 text-sm font-semibold text-[var(--text-secondary)] transition hover:border-[var(--accent)] hover:text-[var(--accent)]"
+    >
+      <LogOut className="h-4 w-4" />
+      Keluar
+    </button>
+  ) : (
+    <NavLink
+      to="/login"
+      className={({ isActive }) =>
+        cn(
+          "inline-flex items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold transition",
+          isActive ? "bg-[var(--accent)] text-white" : "border border-[var(--border-color)] bg-[var(--bg-card)] text-[var(--text-secondary)] hover:border-[var(--accent)] hover:text-[var(--accent)]"
+        )
+      }
+    >
+      <LogIn className="h-4 w-4" />
+      Masuk
+    </NavLink>
+  );
 
   return (
     <header className="sticky top-0 z-50 border-b border-[var(--border-color)] bg-[var(--bg-root)]/85 backdrop-blur">
@@ -35,8 +62,16 @@ export default function Header({ theme, onToggleTheme }) {
           ))}
         </nav>
 
-        {/* Right Side: Theme Toggle + Mobile Menu */}
+        {/* Right Side: Role + Theme Toggle + Mobile Menu */}
         <div className="flex items-center gap-2">
+          <div className="hidden items-center gap-2 md:flex">
+            <div className="hidden items-center gap-2 rounded-xl border border-[var(--border-color)] bg-[var(--bg-card)] px-3 py-2 text-sm font-semibold text-[var(--text-secondary)] xl:inline-flex">
+              {isResearcher ? <ShieldCheck className="h-4 w-4 text-[var(--accent)]" /> : <UserRound className="h-4 w-4 text-[var(--text-muted)]" />}
+              {roleLabel}
+            </div>
+            {authControl}
+          </div>
+
           <button onClick={onToggleTheme} aria-label="Toggle theme" className="flex h-10 w-10 items-center justify-center rounded-xl border border-[var(--border-color)] bg-[var(--bg-card)] transition hover:border-[var(--accent)]">
             {theme === "dark" ? <Sun className="h-4 w-4 text-[var(--text-secondary)]" /> : <Moon className="h-4 w-4 text-[var(--text-secondary)]" />}
           </button>
@@ -55,7 +90,7 @@ export default function Header({ theme, onToggleTheme }) {
       {/* Mobile Menu Dropdown */}
       {mobileMenuOpen && (
         <div className="border-t border-[var(--border-color)] bg-[var(--bg-root)] md:hidden">
-          <nav className="mx-auto flex max-w-6xl flex-col px-4 py-3">
+          <nav className="mx-auto flex max-w-6xl flex-col gap-1 px-4 py-3">
             {navigation.map((item) => (
               <NavLink
                 key={item.href}
@@ -66,6 +101,33 @@ export default function Header({ theme, onToggleTheme }) {
                 {item.label}
               </NavLink>
             ))}
+            <div className="mt-2 flex flex-col gap-2 border-t border-[var(--border-color)] pt-3">
+              <div className="inline-flex items-center gap-2 rounded-lg bg-[var(--bg-card)] px-4 py-3 text-sm font-semibold text-[var(--text-secondary)]">
+                {isResearcher ? <ShieldCheck className="h-4 w-4 text-[var(--accent)]" /> : <UserRound className="h-4 w-4 text-[var(--text-muted)]" />}
+                {roleLabel}
+              </div>
+              {isResearcher ? (
+                <button
+                  onClick={() => {
+                    onLogout?.();
+                    setMobileMenuOpen(false);
+                  }}
+                  className="inline-flex items-center justify-center gap-2 rounded-lg border border-[var(--border-color)] px-4 py-3 text-sm font-semibold text-[var(--text-secondary)]"
+                >
+                  <LogOut className="h-4 w-4" />
+                  Keluar
+                </button>
+              ) : (
+                <NavLink
+                  to="/login"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={({ isActive }) => cn("inline-flex items-center justify-center gap-2 rounded-lg px-4 py-3 text-sm font-semibold transition", isActive ? "bg-[var(--accent)] text-white" : "border border-[var(--border-color)] text-[var(--text-secondary)]")}
+                >
+                  <LogIn className="h-4 w-4" />
+                  Masuk Peneliti
+                </NavLink>
+              )}
+            </div>
           </nav>
         </div>
       )}

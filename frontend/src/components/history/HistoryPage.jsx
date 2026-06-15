@@ -19,10 +19,12 @@ export default function HistoryPage({
   onResetHistory,
   isExportingHistory,
   isResettingHistory,
+  currentUser,
+  onLogout,
 }) {
   return (
     <div className="min-h-screen">
-      <Header theme={theme} onToggleTheme={onToggleTheme} />
+      <Header theme={theme} onToggleTheme={onToggleTheme} currentUser={currentUser} onLogout={onLogout} />
 
       <main className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-8">
         <HistoryFilters

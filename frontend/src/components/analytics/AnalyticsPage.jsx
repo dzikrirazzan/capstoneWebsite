@@ -27,7 +27,7 @@ const HEALTH_THRESHOLDS = {
   fuelConsumption: { efficient: 8, normal: 12, warning: 15 },
 };
 
-function AnalyticsPage({ theme, onToggleTheme }) {
+function AnalyticsPage({ theme, onToggleTheme, currentUser, onLogout }) {
   const [timeRange, setTimeRange] = useState("all");
   const [customStartDate, setCustomStartDate] = useState("");
   const [customEndDate, setCustomEndDate] = useState("");
@@ -536,7 +536,7 @@ function AnalyticsPage({ theme, onToggleTheme }) {
 
   return (
     <div className="min-h-screen bg-[var(--bg-primary)]">
-      <Header theme={theme} onToggleTheme={onToggleTheme} />
+      <Header theme={theme} onToggleTheme={onToggleTheme} currentUser={currentUser} onLogout={onLogout} />
 
       <div className="container mx-auto space-y-6 p-6">
         {/* Time Range Selector */}

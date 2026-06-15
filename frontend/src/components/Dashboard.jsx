@@ -19,10 +19,15 @@ export default function Dashboard({
   chartLoading,
   chartError,
   summaryCounts,
+  currentUser,
+  onLogout,
+  canExportData,
+  onExportData,
+  isExportingData,
 }) {
   return (
     <div className="min-h-screen">
-      <Header theme={theme} onToggleTheme={onToggleTheme} />
+      <Header theme={theme} onToggleTheme={onToggleTheme} currentUser={currentUser} onLogout={onLogout} />
 
       <main className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 py-8 lg:gap-10">
         <section className="space-y-6">
@@ -37,7 +42,7 @@ export default function Dashboard({
             customEndDate={customEndDate}
           />
 
-          <SummaryCards summaryCounts={summaryCounts} />
+          <SummaryCards summaryCounts={summaryCounts} canExportData={canExportData} onExportData={onExportData} isExporting={isExportingData} />
 
           <StatsPanel sensorData={sensorData} stats={stats} statsError={statsError} statsRange={statsRange} onRangeChange={onStatsRangeChange} isLoading={statsLoading} />
         </section>
